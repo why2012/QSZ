@@ -1,0 +1,11 @@
+.DS_Store
+*.pyc
+._*
+npm-debug.log
+resources/tmp/
+/logs/
+/dependency/
+nohup.out
+*.circledata
+*.qrdata
+*.read
