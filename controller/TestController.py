@@ -2,7 +2,7 @@
 from controller.BaseController import *
 
 class TestController(BaseController):
-	@check_login()
+	@checklogin()
 	def execute(self):
 		self.setResult(self.userId)
 

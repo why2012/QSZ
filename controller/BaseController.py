@@ -10,6 +10,7 @@ from util.Exceptions import *
 import platform
 import MySQLdb as mysql
 from lib.LoginFilter import *
+from lib.ServiceFilter import *
 
 class BaseController(web.RequestHandler):
 	def initialize(self):
@@ -26,6 +27,9 @@ class BaseController(web.RequestHandler):
 		self.result = None
 
 		self.version = platform.python_version_tuple()
+
+		self.DBSetup()
+
 
 	def DBSetup(self):
 		self.db = mysql.connect(host = db_config["host"], user = db_config["user"], passwd = db_config["pwd"], db = db_config["db"], charset = db_config["charset"], use_unicode = True)

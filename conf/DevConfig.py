@@ -4,5 +4,5 @@ db_config = {
 	"user": "root",
 	"pwd": "123456",
 	"db": "qszdb",
-	"charset": "utf-8"
+	"charset": "utf8"
 }

@@ -5,7 +5,7 @@ from util.ErrorCode import *
 from lib.AES import AES
 import time
 
-def check_login(enbale_check = True):
+def checklogin(enbale_check = True):
 	def method_process(op):
 		def check(self, *args, **kwargs):
 			if enbale_check:
