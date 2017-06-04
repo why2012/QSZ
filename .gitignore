@@ -5,6 +5,7 @@ npm-debug.log
 resources/tmp/
 /logs/
 /dependency/
+/logs/
 nohup.out
 *.circledata
 *.qrdata

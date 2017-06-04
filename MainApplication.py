@@ -17,7 +17,7 @@ class MakeApp(object):
 		if "Windows" in platform.system():
 			pass
 		if not os.path.exists(LOG_PATH):
-			os.mkdir(LOG_PATH)
+			os.makedirs(LOG_PATH)
 		logging.config.fileConfig("conf/Logging.conf")
 		return web.Application(self.urlMapper.getMapper(), **Setting.Conf)
 
