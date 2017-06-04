@@ -6,6 +6,7 @@ from UrlMapper import *
 import Setting
 import os
 import platform
+import argparse
 
 class MakeApp(object):
 
@@ -21,7 +22,22 @@ class MakeApp(object):
 		logging.config.fileConfig("conf/Logging.conf")
 		return web.Application(self.urlMapper.getMapper(), **Setting.Conf)
 
-if __name__ == "__main__":
+def initDatabase():
+	print "init database."
+
+def startupServer():
 	app = MakeApp().make()
 	app.listen(20001)
 	ioloop.IOLoop.current().start()
+
+if __name__ == "__main__":
+	parser = argparse.ArgumentParser()
+	parser.add_argument('-m', '--mode', help = 'initdb or startup')
+	args = parser.parse_args()
+	mode = args.mode.lower()
+	if mode == 'initdb':
+		initDatabase()
+	elif mode == 'startup':
+		startupServer()
+	else:
+		print "-m initdb|startup"
