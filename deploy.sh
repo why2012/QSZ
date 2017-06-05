@@ -7,6 +7,6 @@ case "$@" in
 		python MainApplication.py
 		;;
 	*)
-		ssh -t ssh why@119.29.113.28 "bash -c 'cd /QSZ/QSZ && git pull && sudo docker restart tornado-env'"
+		ssh -t ssh why@119.29.113.28 "bash -c 'cd /QSZ/QSZ && git stash && git pull && sudo docker restart tornado-env'"
 		;;
 esac

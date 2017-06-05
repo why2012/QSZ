@@ -1,6 +1,4 @@
 # coding: utf-8
-import tornado.ioloop as ioloop
-import tornado.web as web 
 import logging.config
 from UrlMapper import *
 import Setting
@@ -29,6 +27,8 @@ def initDatabase():
 	print "done."
 
 def startupServer():
+	import tornado.ioloop as ioloop
+	import tornado.web as web 
 	app = MakeApp().make()
 	app.listen(20001)
 	ioloop.IOLoop.current().start()
