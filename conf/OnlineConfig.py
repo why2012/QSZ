@@ -1,6 +1,6 @@
 # coding: utf-8
 db_config = {
-	"host": "mysql-server",
+	"host": "119.29.113.28",
 	"user": "root",
 	"pwd": "qingsongzumysqlserver2017.",
 	"db": "qszdb",
