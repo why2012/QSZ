@@ -4,16 +4,20 @@ from conf.Config import *
 import warnings
 reload(warnings).filterwarnings("ignore")
 
-TABLE_USER_INFO = "user_info"
-TABLE_PROPERTY_AUTH = "property_auth"
-TABLE_HOUSE_INFO = "house_info"
-TABLE_HOUSE_VIDEO = "house_video"
-TABLE_HOUSE_PHOTO = "house_photo"
-TABLE_PAYMENT = "user_payment"
-TABLE_FACILITY = "house_facility"
-TABLE_COMMENT = "house_comment"
-TABLE_POSITION = "position"
-TABLE_INVITE = "user_invite"
+TABLE_USER_INFO = "user_info"; EXECUTE_CREATE_TABLE_USER_INFO = True
+TABLE_PROPERTY_AUTH = "property_auth"; EXECUTE_CREATE_TABLE_PROPERTY_AUTH = True
+TABLE_HOUSE_INFO = "house_info"; EXECUTE_CREATE_TABLE_HOUSE_INFO = True
+TABLE_HOUSE_VIDEO = "house_video"; EXECUTE_CREATE_TABLE_HOUSE_VIDEO = True
+TABLE_HOUSE_PHOTO = "house_photo"; EXECUTE_CREATE_TABLE_HOUSE_PHOTO = True
+TABLE_PAYMENT = "user_payment"; EXECUTE_CREATE_TABLE_PAYMENT = True
+TABLE_FACILITY = "house_facility"; EXECUTE_CREATE_TABLE_FACILITY = True
+TABLE_COMMENT = "house_comment"; EXECUTE_CREATE_TABLE_COMMENT = True
+TABLE_POSITION = "position"; EXECUTE_CREATE_TABLE_POSITION = True
+TABLE_INVITE = "user_invite"; EXECUTE_CREATE_TABLE_INVITE = True
+TABLE_ORDER = "order_info"; EXECUTE_CREATE_TABLE_ORDER = True
+TABLE_ORDER_PAYMENY = "order_payment"; EXECUTE_CREATE_TABLE_ORDER_PAYMENY = True
+TABLE_COMPLAINT_REFUND = "complaint_refund"; EXECUTE_CREATE_TABLE_COMPLAINT_REFUND = True
+TABLE_FINANCE_VIOLATION = "finance_violation"; EXECUTE_CREATE_TABLE_FINANCE_VIOLATION = True
 
 CREATE_DATABASE = """ 
 						CREATE DATABASE IF NOT EXISTS %s
@@ -60,7 +64,7 @@ CREATE_TABLE_USER_INFO = """
 CREATE_TABLE_PROPERTY_AUTH = """ 
 						CREATE TABLE IF NOT EXISTS %s (
 							id INT UNSIGNED AUTO_INCREMENT,
-							user_id INT UNSIGNED,
+							user_id INT UNSIGNED NOT NULL,
 							name VARCHAR(100),
 							identity_card_number VARCHAR(25),
 							property_auth_number VARCHAR(100),
@@ -74,7 +78,7 @@ CREATE_TABLE_PROPERTY_AUTH = """
 CREATE_TABLE_HOUSE_INFO = """ 
 						CREATE TABLE IF NOT EXISTS %s (
 							id BIGINT UNSIGNED AUTO_INCREMENT,
-							user_id INT UNSIGNED,
+							user_id INT UNSIGNED NOT NULL,
 							rent_time_type TINYINT UNSIGNED COMMENT '1 短租, 2 长租',
 							rent_room_type TINYINT UNSIGNED COMMENT '1 整租, 2 单间',
 							status TINYINT UNSIGNED COMMENT '0: 创建, 1: 发布, 2: 下架, 3: 删除',
@@ -100,7 +104,7 @@ CREATE_TABLE_HOUSE_INFO = """
 							sex_restriction TINYINT UNSIGNED COMMENT '0 无要求, 1 男, 2 女',
 
 							house_rent INT UNSIGNED COMMENT '租金',
-							payment_type VARCHAR(100) COMMENT '付款方式',
+							payment_type VARCHAR(10) COMMENT '付款方式, 1|3 押一付三, 2|6 押二付六, 1|0 无押金',
 
 							property_management_fee TINYINT UNSIGNED COMMENT '物业费, 1 房东, 2 租客, 3 待定',
 							electric_charge TINYINT UNSIGNED COMMENT '电费, 1 房东, 2 租客, 3 待定',
@@ -120,7 +124,7 @@ CREATE_TABLE_HOUSE_INFO = """
 							CONSTRAINT house_info_user_info_fk FOREIGN KEY (user_id) REFERENCES %s(id),
 							INDEX province_code_index(province_code),
 							INDEX city_code_index(city_code),
-							INDEX county_code_index(county_code)
+							INDEX county_code_index(county_code),
 							INDEX district_code_index(district_code)
 						)ENGINE=InnoDB DEFAULT CHARSET=utf8;
 				""" % (TABLE_HOUSE_INFO, TABLE_USER_INFO) # 房屋信息
@@ -128,13 +132,13 @@ CREATE_TABLE_HOUSE_INFO = """
 CREATE_TABLE_HOUSE_VIDEO = """ 
 						CREATE TABLE IF NOT EXISTS %s (
 							id BIGINT UNSIGNED AUTO_INCREMENT,
-							house_id BIGINT UNSIGNED,
-							user_id INT UNSIGNED,
+							house_id BIGINT UNSIGNED NOT NULL,
+							user_id INT UNSIGNED NOT NULL,
 							video_clip_url VARCHAR(150),
 
 							PRIMARY KEY (id),
 							CONSTRAINT house_video_house_info_fk FOREIGN KEY (house_id) REFERENCES %s(id),
-							CONSTRAINT house_video_user_info_fk FOREIGN KEY (user_id) REFERENCES %s(id),
+							CONSTRAINT house_video_user_info_fk FOREIGN KEY (user_id) REFERENCES %s(id)
 						)ENGINE=InnoDB DEFAULT CHARSET=utf8;
 				""" % (TABLE_HOUSE_VIDEO, TABLE_HOUSE_INFO, TABLE_USER_INFO)
 
@@ -142,44 +146,45 @@ CREATE_TABLE_HOUSE_PHOTO = """
 						CREATE TABLE IF NOT EXISTS %s (
 							id BIGINT UNSIGNED AUTO_INCREMENT,
 							house_id BIGINT UNSIGNED,
-							user_id INT UNSIGNED,
+							user_id INT UNSIGNED NOT NULL,
 							photo_url VARCHAR(150),
 
 							PRIMARY KEY (id),
 							CONSTRAINT house_photo_house_info_fk FOREIGN KEY (house_id) REFERENCES %s(id),
-							CONSTRAINT house_photo_user_info_fk FOREIGN KEY (user_id) REFERENCES %s(id),
+							CONSTRAINT house_photo_user_info_fk FOREIGN KEY (user_id) REFERENCES %s(id)
 						)ENGINE=InnoDB DEFAULT CHARSET=utf8;
 				""" % (TABLE_HOUSE_PHOTO, TABLE_HOUSE_INFO, TABLE_USER_INFO)
 
 CREATE_TABLE_PAYMENT = """ 
 						CREATE TABLE IF NOT EXISTS %s (
 							id BIGINT UNSIGNED AUTO_INCREMENT,
-							user_id INT UNSIGNED,
+							user_id INT UNSIGNED NOT NULL,
 							type TINYINT UNSIGNED COMMENT '1 支付宝, 2 微信支付',
 							account VARCHAR(100),
 
 							PRIMARY KEY (id),
-							CONSTRAINT payment_user_info_fk FOREIGN KEY (user_id) REFERENCES %s(id),
+							CONSTRAINT payment_user_info_fk FOREIGN KEY (user_id) REFERENCES %s(id)
 						)ENGINE=InnoDB DEFAULT CHARSET=utf8;
 				""" % (TABLE_PAYMENT, TABLE_USER_INFO)
 
 CREATE_TABLE_FACILITY = """ 
 						CREATE TABLE IF NOT EXISTS %s (
-							house_id BIGINT UNSIGNED,
+							house_id BIGINT UNSIGNED NOT NULL,
 							facility TINYINT UNSIGNED COMMENT '1 空调, 2 暖气, 3 洗衣机, 4 冰箱, 5 允许宠物, 6 电视, 7 浴缸, 8 热水淋浴, 9 门禁系统, 10 有线网络, 11 电梯, 12 无线网络, 13 停车位, 14 饮水机',
 
-							CONSTRAINT facility_house_info_fk FOREIGN KEY (house_id) REFERENCES %s(id),
+							CONSTRAINT facility_house_info_fk FOREIGN KEY (house_id) REFERENCES %s(id)
 						)ENGINE=InnoDB DEFAULT CHARSET=utf8;
 				""" % (TABLE_FACILITY, TABLE_HOUSE_INFO)
 
 CREATE_TABLE_COMMENT = """ 
 						CREATE TABLE IF NOT EXISTS %s (
-							house_id BIGINT UNSIGNED,
-							user_id INT UNSIGNED,
+							house_id BIGINT UNSIGNED NOT NULL,
+							user_id INT UNSIGNED NOT NULL,
 							content TEXT,
+							create_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
 							CONSTRAINT comment_house_info_fk FOREIGN KEY (house_id) REFERENCES %s(id),
-							CONSTRAINT comment_user_info_fk FOREIGN KEY (user_id) REFERENCES %s(id),
+							CONSTRAINT comment_user_info_fk FOREIGN KEY (user_id) REFERENCES %s(id)
 						)ENGINE=InnoDB DEFAULT CHARSET=utf8;
 				""" % (TABLE_COMMENT, TABLE_HOUSE_INFO, TABLE_USER_INFO)
 
@@ -195,29 +200,107 @@ CREATE_TABLE_POSITION = """
 CREATE_TABLE_INVITE = """ 
 						CREATE TABLE IF NOT EXISTS %s (
 							id INT UNSIGNED AUTO_INCREMENT,
-							user_id INT UNSIGNED,
-							my_invite_code VARCHAR(20) DEFAULT '-1' COMMENT '0xid',
+							user_id INT UNSIGNED NOT NULL,
+							my_invite_code VARCHAR(20) DEFAULT '00000000' COMMENT '0xid',
 							friend_invite_code VARCHAR(20) DEFAULT '-1',
-							PRIMARY KEY (id)
+							PRIMARY KEY (id),
 							CONSTRAINT invite_user_info_fk FOREIGN KEY (user_id) REFERENCES %s(id),
 							INDEX my_invite_code_index(my_invite_code),
 							INDEX friend_invite_code_index(friend_invite_code)
 						)ENGINE=InnoDB DEFAULT CHARSET=utf8;
 				""" % (TABLE_INVITE, TABLE_USER_INFO)
 
+CREATE_TABLE_ORDER = """
+						CREATE TABLE IF NOT EXISTS %s (
+							id BIGINT UNSIGNED AUTO_INCREMENT,
+							owner_id INT UNSIGNED NOT NULL,
+							renter_id INT UNSIGNED NOT NULL,
+							house_id BIGINT UNSIGNED NOT NULL,
+							status TINYINT UNSIGNED COMMENT '1 租客提交, 2 房东确认, 3 支付完成, 4 确定入住, 5 投诉退款, 6 退款成功',
+							create_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+							update_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+							PRIMARY KEY (id),
+							CONSTRAINT order_owner_user_info_fk FOREIGN KEY (owner_id) REFERENCES %s(id),
+							CONSTRAINT order_renter_user_info_fk FOREIGN KEY (renter_id) REFERENCES %s(id),
+							CONSTRAINT order_house_house_info_fk FOREIGN KEY (house_id) REFERENCES %s(id)
+						)ENGINE=InnoDB DEFAULT CHARSET=utf8;
+				""" % (TABLE_ORDER, TABLE_USER_INFO, TABLE_USER_INFO, TABLE_HOUSE_INFO)
+
+CREATE_TABLE_ORDER_PAYMENY = """ 
+						CREATE TABLE IF NOT EXISTS %s (
+							id BIGINT UNSIGNED AUTO_INCREMENT,
+							order_id BIGINT UNSIGNED NOT NULL,
+							amount INT UNSIGNED NOT NULL COMMENT '金额',
+							type TINYINT UNSIGNED COMMENT '1 支付宝, 2 微信支付',
+							payer_id INT UNSIGNED NOT NULL,
+							payee_id INT UNSIGNED NOT NULL,
+							status TINYINT UNSIGNED COMMENT '1 创建, 2 完成支付, 3 退款完成',
+							create_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+							update_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+							PRIMARY KEY (id),
+							CONSTRAINT order_payment_order_info_fk FOREIGN KEY (order_id) REFERENCES %s(id),
+							CONSTRAINT order_payment_payer_user_info_fk FOREIGN KEY (payer_id) REFERENCES %s(id),
+							CONSTRAINT order_payment_payee_user_info_fk FOREIGN KEY (payee_id) REFERENCES %s(id)
+						)ENGINE=InnoDB DEFAULT CHARSET=utf8;
+				""" % (TABLE_ORDER_PAYMENY, TABLE_ORDER, TABLE_USER_INFO, TABLE_USER_INFO)
+
+CREATE_TABLE_COMPLAINT_REFUND = """ 
+						CREATE TABLE IF NOT EXISTS %s (
+							id BIGINT UNSIGNED AUTO_INCREMENT,
+							user_id INT UNSIGNED NOT NULL,
+							order_id BIGINT UNSIGNED NOT NULL,
+							operation VARCHAR(200),
+							type VARCHAR(200),
+							content TEXT,
+							status TINYINT UNSIGNED COMMENT '1 投诉提交, 2 处理中, 3 处理完成',
+							create_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+							update_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+							PRIMARY KEY (id),
+							CONSTRAINT complaint_refund_user_info_fk FOREIGN KEY (user_id) REFERENCES %s(id),
+							CONSTRAINT complaint_refund_order_info_fk FOREIGN KEY (order_id) REFERENCES %s(id)
+						)ENGINE=InnoDB DEFAULT CHARSET=utf8;
+				""" % (TABLE_COMPLAINT_REFUND, TABLE_USER_INFO, TABLE_ORDER)
+
+CREATE_TABLE_FINANCE_VIOLATION = """ 
+						CREATE TABLE IF NOT EXISTS %s (
+							id BIGINT UNSIGNED AUTO_INCREMENT,
+							user_id INT UNSIGNED NOT NULL,
+							order_id BIGINT UNSIGNED NOT NULL,
+							payment_id BIGINT UNSIGNED NOT NULL,
+							amount INT UNSIGNED NOT NULL COMMENT '金额',
+							status TINYINT UNSIGNED COMMENT '1 提交, 2 处理完成',
+							create_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+							update_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+							PRIMARY KEY (id),
+							CONSTRAINT finance_violation_user_info_fk FOREIGN KEY (user_id) REFERENCES %s(id),
+							CONSTRAINT finance_violation_order_info_fk FOREIGN KEY (order_id) REFERENCES %s(id),
+							CONSTRAINT finance_violation_order_payment_fk FOREIGN KEY (payment_id) REFERENCES %s(id)
+						)ENGINE=InnoDB DEFAULT CHARSET=utf8;
+				""" % (TABLE_FINANCE_VIOLATION, TABLE_USER_INFO, TABLE_ORDER, TABLE_ORDER_PAYMENY)
+
 def initDB():
 	db, cursor = getDB()
 	try:
 		cursor.execute(CREATE_DATABASE)
 		cursor.execute(USE_DATABASE)
-		cursor.execute(CREATE_TABLE_USER_INFO)
-		cursor.execute(CREATE_TABLE_PROPERTY_AUTH)
-		cursor.execute(CREATE_TABLE_HOUSE_INFO)
-		cursor.execute(CREATE_TABLE_HOUSE_VIDEO)
-		cursor.execute(CREATE_TABLE_HOUSE_PHOTO)
-		cursor.execute(CREATE_TABLE_PAYMENT)
-		cursor.execute(CREATE_TABLE_FACILITY)
-		cursor.execute(CREATE_TABLE_COMMENT)
+		EXECUTE_CREATE_TABLE_USER_INFO and cursor.execute(CREATE_TABLE_USER_INFO) ; print TABLE_USER_INFO, "done."
+		EXECUTE_CREATE_TABLE_PROPERTY_AUTH and cursor.execute(CREATE_TABLE_PROPERTY_AUTH) ; print TABLE_PROPERTY_AUTH, "done."
+		EXECUTE_CREATE_TABLE_HOUSE_INFO and cursor.execute(CREATE_TABLE_HOUSE_INFO) ; print TABLE_HOUSE_INFO, "done."
+		EXECUTE_CREATE_TABLE_HOUSE_VIDEO and cursor.execute(CREATE_TABLE_HOUSE_VIDEO) ; print TABLE_HOUSE_VIDEO, "done."
+		EXECUTE_CREATE_TABLE_HOUSE_PHOTO and cursor.execute(CREATE_TABLE_HOUSE_PHOTO) ; print TABLE_HOUSE_PHOTO, "done."
+		EXECUTE_CREATE_TABLE_PAYMENT and cursor.execute(CREATE_TABLE_PAYMENT) ; print TABLE_PAYMENT, "done."
+		EXECUTE_CREATE_TABLE_FACILITY and cursor.execute(CREATE_TABLE_FACILITY) ; print TABLE_FACILITY, "done."
+		EXECUTE_CREATE_TABLE_COMMENT and cursor.execute(CREATE_TABLE_COMMENT) ; print TABLE_COMMENT, "done."
+		EXECUTE_CREATE_TABLE_POSITION and cursor.execute(CREATE_TABLE_POSITION) ; print TABLE_POSITION, "done."
+		EXECUTE_CREATE_TABLE_INVITE and cursor.execute(CREATE_TABLE_INVITE) ; print TABLE_INVITE, "done."
+		EXECUTE_CREATE_TABLE_ORDER and cursor.execute(CREATE_TABLE_ORDER) ; print TABLE_ORDER, "done."
+		EXECUTE_CREATE_TABLE_ORDER_PAYMENY and cursor.execute(CREATE_TABLE_ORDER_PAYMENY) ; print TABLE_ORDER_PAYMENY, "done."
+		EXECUTE_CREATE_TABLE_COMPLAINT_REFUND and cursor.execute(CREATE_TABLE_COMPLAINT_REFUND) ; print TABLE_COMPLAINT_REFUND, "done."
+		EXECUTE_CREATE_TABLE_FINANCE_VIOLATION and cursor.execute(CREATE_TABLE_FINANCE_VIOLATION) ; print TABLE_FINANCE_VIOLATION, "done."
 		db.commit()
 	except Exception, e:
 		db.rollback()
