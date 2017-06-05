@@ -32,7 +32,7 @@ class BaseController(web.RequestHandler):
 
 
 	def DBSetup(self):
-		self.db = mysql.connect(host = db_config["host"], user = db_config["user"], passwd = db_config["pwd"], db = db_config["db"], charset = db_config["charset"], use_unicode = True)
+		self.db = mysql.connect(host = db_config["host"], user = db_config["user"], passwd = db_config["pwd"], db = db_config["db"], port = db_config["port"], charset = db_config["charset"], use_unicode = True)
 		self.cursor = self.db.cursor()
 
 	def post(self):

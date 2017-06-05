@@ -1,8 +1,9 @@
 # coding: utf-8
 db_config = {
-	"host": "127.0.0.1",
+	"host": "localhost",
 	"user": "root",
 	"pwd": "123456",
 	"db": "qszdb",
+	"port": 3306,
 	"charset": "utf8"
 }
