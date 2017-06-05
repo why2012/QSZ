@@ -24,6 +24,9 @@ class MakeApp(object):
 
 def initDatabase():
 	print "init database."
+	from util.InitializeDatabase import initDB
+	initDB()
+	print "done."
 
 def startupServer():
 	app = MakeApp().make()
@@ -32,7 +35,7 @@ def startupServer():
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
-	parser.add_argument('-m', '--mode', help = 'initdb or startup')
+	parser.add_argument('-m', '--mode', help = 'initdb or startup', default = "startup")
 	args = parser.parse_args()
 	mode = args.mode.lower()
 	if mode == 'initdb':
@@ -40,4 +43,4 @@ if __name__ == "__main__":
 	elif mode == 'startup':
 		startupServer()
 	else:
-		print "-m initdb|startup"
+		parser.print_help()
