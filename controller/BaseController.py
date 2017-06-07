@@ -11,25 +11,28 @@ import platform
 import MySQLdb as mysql
 from lib.LoginFilter import *
 from lib.ServiceFilter import *
+from lib.QueryparamFilter import *
 
 class BaseController(web.RequestHandler):
 	def initialize(self):
-		self.logger = logging.getLogger("controllerInfoDebug")
-		self.loggerWaning = logging.getLogger("controllerWarning")
-		self.loggerError = logging.getLogger("controllerError")
+		try:
+			self.logger = logging.getLogger("controllerInfoDebug")
+			self.loggerWaning = logging.getLogger("controllerWarning")
+			self.loggerError = logging.getLogger("controllerError")
 
-		self.logger.addFilter(InfoDebugFilter())
-		self.loggerWaning.addFilter(WarngingFilter())
-		self.loggerError.addFilter(ErrorFilter())
-		self.__argsNameMapper = {}
-		self.__args = {}
+			self.logger.addFilter(InfoDebugFilter())
+			self.loggerWaning.addFilter(WarngingFilter())
+			self.loggerError.addFilter(ErrorFilter())
+			self.__argsNameMapper = {}
+			self.__args = {}
 
-		self.result = None
+			self.result = None
 
-		self.version = platform.python_version_tuple()
-
-		self.DBSetup()
-
+			self.version = platform.python_version_tuple()
+		
+			self.DBSetup()
+		except Exception, e:
+			print e
 
 	def DBSetup(self):
 		self.db = mysql.connect(host = db_config["host"], user = db_config["user"], passwd = db_config["pwd"], db = db_config["db"], port = db_config["port"], charset = db_config["charset"], use_unicode = True)

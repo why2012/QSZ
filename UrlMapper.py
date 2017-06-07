@@ -1,13 +1,14 @@
 # coding: utf-8
-from controller.UserLoginController import UserLoginController
-from controller.TestController import TestController
+from controller.TestController import *
+from controller.UserController import *
 
 class UrlMapper(object):
 
 	def __init__(self):
 		self.mapper = [
-			(r"/login", UserLoginController),
-			(r"/test", TestController)
+			(r"/test", TestController),
+			#(r"/login", UserLoginController),
+			(r"/wx_fetch_userinfo", WxFetchUserInfo),
 		]	
 
 	def getMapper(self):
