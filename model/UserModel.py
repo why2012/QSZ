@@ -11,12 +11,12 @@ class UserModel(BaseModel):
 
 	def findUserByOpenid(self, openid):
 		self.cursor.execute("""select 
-			wx_openid, wx_nickname, wx_sex, wx_country, wx_province, wx_city, wx_headimgurl as headimgurl 
+			wx_openid, wx_nickname, wx_sex, wx_country, wx_province, wx_city, wx_headimgurl as headimgurl, id 
 			from user_info where wx_openid=%s limit 1""", (openid,))
 		userInfo = self.cursor.fetchone()
 		if userInfo is not None:
 			userInfo = {"wx_openid": userInfo[0], "wx_nickname": userInfo[1], "wx_sex": userInfo[2], "wx_country": userInfo[3],
-			"wx_province": userInfo[4], "wx_city": userInfo[5], "headimgurl": userInfo[6]}
+			"wx_province": userInfo[4], "wx_city": userInfo[5], "headimgurl": userInfo[6], "id": userInfo[7]}
 		return userInfo
 
 	def insertUserWxInfo(self, userInfo):
