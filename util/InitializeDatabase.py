@@ -44,6 +44,8 @@ CREATE_TABLE_USER_INFO = """
 
 							authentication TINYINT UNSIGNED COMMENT '0 未审核, 1 审核中, 2 审核完成, 3 审核失败',
 							real_name VARCHAR(100),
+							nickname VARCHAR(100) COMMENT '称呼',
+							user_type TINYINT UNSIGNED COMMENT '1 房东, 2 二房东, 3 中介',  
 							photo_url VARCHAR(150),
 							identity_card_number VARCHAR(25),
 							id_card_photo_front_url VARCHAR(150),

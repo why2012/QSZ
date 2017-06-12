@@ -4,6 +4,7 @@ from util.Exceptions import *
 from util.ErrorCode import *
 from lib.AES import AES
 import time
+import traceback
 
 def checklogin(enbale_check = True):
 	def method_process(op):
@@ -24,8 +25,9 @@ def checklogin(enbale_check = True):
 							op(self, *args, **kwargs)
 					else:
 						warnLoginOut(self)
-				except:
-					warnLoginOut(self)
+				except Exception, e:
+					print traceback.format_exc()
+					raise e
 			else:
 				op(self, *args, **kwargs)
 

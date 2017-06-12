@@ -9,9 +9,7 @@ from conf.Config import *
 from util.Exceptions import *
 import platform
 import MySQLdb as mysql
-from lib.LoginFilter import *
-from lib.ServiceFilter import *
-from lib.QueryparamFilter import *
+from lib import *
 
 class BaseController(web.RequestHandler):
 	def initialize(self):
@@ -59,6 +57,7 @@ class BaseController(web.RequestHandler):
 			if self.result is not None:
 				self.set_header('Content-Type', 'application/json')
 				self.jsonWrite(self.result)
+				self.logger.info(self.oneLine(str(self.getAllArgs())) + "; " + json.dumps(self.result, ensure_ascii = False))
 
 	def execute(self):
 		pass
@@ -87,6 +86,16 @@ class BaseController(web.RequestHandler):
 			return True
 		else: 
 			return False
+
+	def getUpFileName(self, name = "file", raiseException = True):
+		name = self.__getArgName(name)
+		if name in self.request.files:
+			fileMetas = self.request.files[name]
+			if fileMetas:
+				for meta in fileMetas:
+					return meta['filename']
+		elif raiseException:
+			raise ErrorStatusException(name + " must not be None", STATUS_PARAM_ERROR)
 
 	def processUpFile(self, name = "file", raiseException = True):
 		name = self.__getArgName(name)
