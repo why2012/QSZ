@@ -3,7 +3,8 @@ from controller.BaseController import *
 
 class TestController(BaseController):
 	#@checklogin()
-	#@sql("select-one wx_openid as a, wx_unionid from user_info")
+	@sql("select-one wx_openid as a, wx_unionid from user_info", (), "sqlResult", "array")
+	@sql("select wx_openid as a, wx_unionid from user_info", (), "sqlResult", "array")
 	def execute(self):
 		# self.setResult(self.userId)
 		wxUserInfo = {
@@ -14,7 +15,7 @@ class TestController(BaseController):
 		}
 		access_token = {"access_token": "aabbcc123", "expires_in": 7200}
 		self.jsonWrite(wxUserInfo)
-		# print self.sqlResult
+		print self.sqlResult
 
 	@staticmethod
 	def checkParams(self):

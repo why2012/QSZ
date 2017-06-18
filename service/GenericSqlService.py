@@ -5,10 +5,14 @@ from model.GenericModel import GenericModel
 class GenericSqlService(BaseService):
 	def __init__(self, db, cursor):
 		self.genericModel = GenericModel(db, cursor)
+		
+	def reinit(self):
 		self.attrmap = []
 		self.select_one = False;
 
-	def SQL(self, targetObj, sqlString, sqlParams):
+	# scopeType: object|array
+	def SQL(self, targetObj, sqlString, sqlParams, scope = "sqlResult", scopeType = "object"):
+		self.reinit()
 		sqlString = self.preProcess(sqlString)
 		sqlTokenList = sqlString.split(" ")
 		sqlTokenList = filter(lambda t: t.strip() != "", sqlTokenList)
@@ -25,10 +29,13 @@ class GenericSqlService(BaseService):
 			else:
 				selectResult = self.genericModel.SELECT_ONE(" ".join(originalSqlTokenList), sqlParams, self.attrmap)
 			if targetObj is not None:
-				if not hasattr(targetObj, "sqlResult"):
-					setattr(targetObj, "sqlResult", [])
-				sqlResult = getattr(targetObj, "sqlResult")
-				sqlResult.append(selectResult)
+				if scopeType.lower() == "array":
+					if not hasattr(targetObj, scope):
+						setattr(targetObj, scope, [])
+					sqlResult = getattr(targetObj, scope)
+					sqlResult.append(selectResult)
+				else:
+					setattr(targetObj, scope, selectResult)
 			return selectResult
 		elif sqlTokenList[0] == "UPDATE":
 			updateResult = self.genericModel.UPDATE(" ".join(originalSqlTokenList), sqlParams)
@@ -72,7 +79,7 @@ class GenericSqlService(BaseService):
 		local_sql_status = sqlStatusMap["START"]
 		local_sql_vars = {}
 		for index, token in enumerate(sqlTokenList):
-			
+
 			if local_sql_status == sqlStatusMap["START"]:
 				local_sql_status = sqlStatusMap["AFTER_FIRST_OPRAND"]
 				if token == "SELECT":
