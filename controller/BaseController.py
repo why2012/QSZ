@@ -51,7 +51,7 @@ class BaseController(web.RequestHandler):
 			self.setResult(status = e.getCode(), msg = e.getMsg())
 			self.loggerWaning.warn(self.oneLine(str(self.getAllArgs()) + "; " + e.getMsg() + "\n" + traceback.format_exc()))
 		except Exception, e:
-			self.setResult(status = STATUS_SCAN_ERROR, msg = "Internal Error: " + repr(type(e)) + ", " + str(e))
+			self.setResult(status = INTERNAL_ERROR, msg = "Internal Error: " + repr(type(e)) + ", " + str(e))
 			self.loggerError.error(self.oneLine(str(self.getAllArgs()) + "; " + str(e) + "\n" + traceback.format_exc()))
 		finally:
 			if self.result is not None:
