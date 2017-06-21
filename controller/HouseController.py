@@ -137,14 +137,16 @@ class HouseCreate(BaseController):
 			"self.rent_room_type", "self.house_area", "self.house_type", "self.house_floor", "self.house_direction", "self.house_decoration",
 			"self.house_max_livein", "self.house_rent", "self.payment_type", "self.property_management_fee", "self.heating_charge",
 			"self.description_title", "self.description", "self.traffic_condition", "self.around_condition"), holdon = True)
-	def execute(self):
+	@invoke("""
 		facilityList = self.facility.strip().split("|")
-		house_id = self.lastid
+		self.house_id = self.lastid
 		for facility in facilityList:
 			if facility != "":
-				self.sqlServ.SQL("replace into house_facility(house_id, facility) values(%s, %s)", (house_id, facility), holdon = True)
+				self.sqlServ.SQL("replace into house_facility(house_id, facility) values(%s, %s)", (self.house_id, facility), holdon = True)
 		self.db.commit()
-		self.setResult({"house_id": house_id})
+		""")
+	def execute(self):
+		self.setResult({"house_id": self.house_id})
 
 
 

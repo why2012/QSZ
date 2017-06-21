@@ -5,6 +5,11 @@ class TestController(BaseController):
 	#@checklogin()
 	@sql("select-one wx_openid as a, wx_unionid from user_info", (), "sqlResult", "array")
 	@sql("select wx_openid as a, wx_unionid from user_info", (), "sqlResult", "array")
+	@invoke(""" 
+		# test invoke tag
+		for r in self.sqlResult:
+			print r
+		""")
 	def execute(self):
 		# self.setResult(self.userId)
 		wxUserInfo = {
