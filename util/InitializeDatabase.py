@@ -68,12 +68,14 @@ CREATE_TABLE_PROPERTY_AUTH = """
 						CREATE TABLE IF NOT EXISTS %s (
 							id INT UNSIGNED AUTO_INCREMENT,
 							user_id INT UNSIGNED NOT NULL,
-							name VARCHAR(100),
+							name VARCHAR(100) COMMENT '房产证姓名',
 							identity_card_number VARCHAR(25),
 							property_auth_number VARCHAR(100),
 							property_auth_photo_url VARCHAR(150),
+							authentication TINYINT UNSIGNED COMMENT '0 未审核, 1 审核中, 2 审核完成, 3 审核失败',
 
 							PRIMARY KEY (id),
+							UNIQUE property_auth_number_index(property_auth_number),
 							CONSTRAINT property_auth_user_info_fk FOREIGN KEY (user_id) REFERENCES %s(id)
 						)ENGINE=InnoDB DEFAULT CHARSET=utf8;
 				""" % (TABLE_PROPERTY_AUTH, TABLE_USER_INFO) # 房产证信息
@@ -175,6 +177,7 @@ CREATE_TABLE_FACILITY = """
 							house_id BIGINT UNSIGNED NOT NULL,
 							facility TINYINT UNSIGNED COMMENT '1 空调, 2 暖气, 3 洗衣机, 4 冰箱, 5 允许宠物, 6 电视, 7 浴缸, 8 热水淋浴, 9 门禁系统, 10 有线网络, 11 电梯, 12 无线网络, 13 停车位, 14 饮水机',
 
+							PRIMARY KEY(house_id, facility),
 							CONSTRAINT facility_house_info_fk FOREIGN KEY (house_id) REFERENCES %s(id)
 						)ENGINE=InnoDB DEFAULT CHARSET=utf8;
 				""" % (TABLE_FACILITY, TABLE_HOUSE_INFO)

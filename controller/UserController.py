@@ -3,9 +3,9 @@ from controller.BaseController import *
 from lib.AES import AES
 import time
 
-# TODO
 # 用户信息录入
 class UserInfoCreate(BaseController):
+	@checklogin()
 	# 称呼
 	@queryparam("nickname", "string")
 	# 性别 1 男， 2 女，0 未知
@@ -16,9 +16,10 @@ class UserInfoCreate(BaseController):
 	@queryparam("self_description", "string")
 	# 头像
 	@userfile("portrait", "portrait")
-	@service("UserService", "userService")
+	@sql("update user_info set nickname=%s, wx_sex=%s, user_type=%s, self_description=%s, wx_headimgurl = %s where id=%s",
+		("self.nickname", "self.sex", "self.user_type", "self.self_description", "self.portrait", "self.userId"))
 	def execute(self):
-		pass
+		self.setResult()
 
 class WxFetchUserInfo(BaseController):
 	@queryparam("openid", "string")
@@ -38,7 +39,6 @@ class WxFetchUserInfo(BaseController):
 			self.userInfo["token"] = aes.encrypt("%s|%s|%d" % (TOKEN_HEADER, self.userInfo["id"], int(time.time())))
 		self.setResult(self.userInfo)
 
-# TODO
 # 实名认证
 class UserRealNameIdentification(BaseController):
 	@checklogin()
@@ -47,6 +47,16 @@ class UserRealNameIdentification(BaseController):
 	@userfile("portrait", "idcardportrait")
 	@userfile("idcardfront", "idcardfront")
 	@userfile("idcardback", "idcardback")
+	@sql("""
+		update user_info
+		set real_name = %s, 
+		identity_card_number = %s, 
+		photo_url = %s, 
+		id_card_photo_front_url = %s, 
+		id_card_photo_back_url = %s,
+		authentication = %s
+		where id = %s
+		""",
+		("self.realname", "self.idcardnumber", "self.idcardportrait", "self.idcardfront", "self.idcardback", 0, "self.userId"))
 	def execute(self):
 		self.setResult([self.realname, self.idcardnumber])
-		pass

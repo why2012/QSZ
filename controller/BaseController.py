@@ -54,6 +54,8 @@ class BaseController(web.RequestHandler):
 			self.setResult(status = INTERNAL_ERROR, msg = "Internal Error: " + repr(type(e)) + ", " + str(e))
 			self.loggerError.error(self.oneLine(str(self.getAllArgs()) + "; " + str(e) + "\n" + traceback.format_exc()))
 		finally:
+			if self.db:
+				self.db.close()
 			if self.result is not None:
 				self.set_header('Content-Type', 'application/json')
 				self.jsonWrite(self.result)

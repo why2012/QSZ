@@ -29,15 +29,18 @@ def userfile(filename, newfilename, useridname = "userId", basepath = "data/user
 					uniqueidnameIndex = uniqueidname.index("]")
 					_uniqueidname = uniqueidname[uniqueidnameIndex + 1:]
 					newfilepath = basedir + newfilename + "-" + "%s" + "." + extname
+					if not hasattr(self, "_saveFileFuncParams"):
+						setattr(self, "_saveFileFuncParams", [])
 					self._saveFileFunc = saveFileFunc
-					self._saveFileFuncParams = {"self": self, "upfilename": upfilename, "filename": filename, "newfilepath": newfilepath, "overwrite": overwrite, "uniqueidname": _uniqueidname}
+					self._saveFileFuncParams.append({"self": self, "upfilename": upfilename, "filename": filename, "newfilepath": newfilepath, "overwrite": overwrite, "uniqueidname": _uniqueidname, "newfilename": newfilename})
+					# self._saveFileFunc(**self._saveFileFuncParams[0])
 					op(self, *args, **kwargs)
 					return
-			saveFileFunc(self, upfilename, filename, newfilepath, overwrite)
+			saveFileFunc(self, upfilename, filename, newfilepath, overwrite, None, newfilename)
 			op(self, *args, **kwargs)
 		return get_param
 
-	def saveFileFunc(self, upfilename, filename, newfilepath, overwrite, uniqueidname = None):
+	def saveFileFunc(self, upfilename, filename, newfilepath, overwrite, uniqueidname = None, newfilename = None):
 		if uniqueidname is not None:
 			uniqueidname = getattr(self, uniqueidname)
 			if uniqueidname is None:
@@ -49,4 +52,6 @@ def userfile(filename, newfilename, useridname = "userId", basepath = "data/user
 		filebody = self.processUpFile(filename)
 		with open(newfilepath, "w") as ufile:
 			ufile.write(filebody)
+		if newfilename is not None:	
+			setattr(self, newfilename, newfilepath) 
 	return method_process

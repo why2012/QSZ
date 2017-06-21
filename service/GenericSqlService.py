@@ -3,18 +3,19 @@ from service.BaseService import *
 from model.GenericModel import GenericModel
 
 class GenericSqlService(BaseService):
-	def __init__(self, db, cursor):
+	def __init__(self, db, cursor, targetObj):
 		self.genericModel = GenericModel(db, cursor)
+		self.targetObj = targetObj
 		
 	def reinit(self):
 		self.attrmap = []
 		self.select_one = False;
 
 	# scopeType: object|array
-	def SQL(self, targetObj, sqlString, sqlParams, scope = "sqlResult", scopeType = "object"):
+	def SQL(self, sqlString, sqlParams, scope = "sqlResult", scopeType = "array", affectId = "lastid", holdon = False):
 		self.reinit()
 		sqlString = self.preProcess(sqlString)
-		sqlTokenList = sqlString.split(" ")
+		sqlTokenList = sqlString.strip().replace('\n', ' ').replace('\t', ' ').split(" ")
 		sqlTokenList = filter(lambda t: t.strip() != "", sqlTokenList)
 		originalSqlTokenList = sqlTokenList
 		sqlTokenList = map(lambda t: t.upper(), sqlTokenList)
@@ -28,21 +29,25 @@ class GenericSqlService(BaseService):
 				selectResult = self.genericModel.SELECT(" ".join(originalSqlTokenList), sqlParams, self.attrmap)
 			else:
 				selectResult = self.genericModel.SELECT_ONE(" ".join(originalSqlTokenList), sqlParams, self.attrmap)
-			if targetObj is not None:
+			if self.targetObj is not None:
 				if scopeType.lower() == "array":
-					if not hasattr(targetObj, scope):
-						setattr(targetObj, scope, [])
-					sqlResult = getattr(targetObj, scope)
+					if not hasattr(self.targetObj, scope):
+						setattr(self.targetObj, scope, [])
+					sqlResult = getattr(self.targetObj, scope)
 					sqlResult.append(selectResult)
 				else:
-					setattr(targetObj, scope, selectResult)
+					setattr(self.targetObj, scope, selectResult)
 			return selectResult
 		elif sqlTokenList[0] == "UPDATE":
-			updateResult = self.genericModel.UPDATE(" ".join(originalSqlTokenList), sqlParams)
+			updateResult = self.genericModel.UPDATE(" ".join(originalSqlTokenList), sqlParams, holdon)
 			return updateResult
-		elif sqlTokenList[0] == "INSERT":
-			insertResult = self.genericModel.INSERT(" ".join(originalSqlTokenList), sqlParams)
+		elif sqlTokenList[0] == "INSERT" or sqlTokenList[0] == "REPLACE":
+			insertResult = self.genericModel.INSERT(" ".join(originalSqlTokenList), sqlParams, holdon)
+			setattr(self.targetObj, affectId, insertResult)
 			return insertResult
+		elif sqlTokenList[0] == "DELETE":
+			deleteResult = self.genericModel.DELETE(" ".join(originalSqlTokenList), sqlParams, holdon)
+			return deleteResult
 		else:
 			raise Exception("Illegal sql token: " + sqlTokenList[0])
 

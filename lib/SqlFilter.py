@@ -3,15 +3,19 @@ import importlib
 from util.Exceptions import *
 from util.ErrorCode import *
 from service.GenericSqlService import *
+from lib.ObjectAttrParser import *
 
-def sql(sqlString, sqlParams = (), scope = "sqlResult", scopeType = "object"):
+# scope and scopeType for select
+# holdon, and commit together
+def sql(sqlString, sqlParams = (), scope = "sqlResult", scopeType = "array", affectId = "lastid", holdon = False):
 	def method_process(op):
 		def get_param(self, *args, **kwargs):
+			sqlParamsValue = parseObjAttr(self, sqlParams)
 			if not hasattr(self, "sqlServ"):
-				sqlServ = GenericSqlService(self.db, self.cursor)
+				sqlServ = GenericSqlService(self.db, self.cursor, self)
 				setattr(self, "sqlServ", sqlServ)
 			sqlServ = getattr(self, "sqlServ")
-			sqlServ.SQL(self, sqlString, sqlParams, scope, scopeType)
+			sqlServ.SQL(sqlString, sqlParamsValue, scope, scopeType, affectId, holdon)
 			op(self, *args, **kwargs)
 		return get_param
 	return method_process

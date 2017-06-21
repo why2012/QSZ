@@ -27,12 +27,23 @@ class GenericModel(BaseModel):
 				resultList.append(resultMap)
 		return resultList
 
-	def UPDATE(self, sqlString, sqlParams):
+	def UPDATE(self, sqlString, sqlParams, holdon = False):
+		# print '----------', sqlString
+		# print sqlParams
 		self.cursor.execute(sqlString, sqlParams)
-		self.db.commit()
+		if not holdon:
+			self.db.commit()
 		return True
 
-	def INSERT(self, sqlString, sqlParams):
+	def INSERT(self, sqlString, sqlParams, holdon = False):
 		self.cursor.execute(sqlString, sqlParams)
-		self.db.commit()
+		lastid = self.cursor.lastrowid
+		if not holdon:
+			self.db.commit()
+		return lastid
+
+	def DELETE(self, sqlString, sqlParams, holdon = False):
+		self.cursor.execute(sqlString, sqlParams)
+		if not holdon:
+			self.db.commit()
 		return True
