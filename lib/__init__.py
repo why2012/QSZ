@@ -4,3 +4,4 @@ from lib.QueryparamFilter import *
 from lib.UserFileFilter import *
 from lib.SqlFilter import *
 from lib.InvokeFilter import *
+from lib.CheckParam import *

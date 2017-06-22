@@ -3,7 +3,7 @@ import importlib
 from util.Exceptions import *
 from util.ErrorCode import *
 
-def queryparam(paramName, ptype = None, optional = False, default = None):
+def queryparam(paramName, ptype = "string", optional = False, default = None):
 	def method_process(op):
 		def get_param(self, *args, **kwargs):
 			paramValue = None

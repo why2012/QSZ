@@ -207,8 +207,48 @@ openid
 }
 ```
 
+### 添加房源照片，一次一张
+地址: /create_house_photo
+
+方法: post
+
+参数
+```
+openid
+```
+
+返回
+```
+
+{
+  "status": 0,
+  "msg": "",
+  "ans": {}
+}
+```
+
 ### 修改房源视频
 地址: /update_house_video
+
+方法: post
+
+参数
+```
+openid
+```
+
+返回
+```
+
+{
+  "status": 0,
+  "msg": "",
+  "ans": {}
+}
+```
+
+### 添加房源视频
+地址: /create_house_video
 
 方法: post
 

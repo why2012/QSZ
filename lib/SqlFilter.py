@@ -7,7 +7,7 @@ from lib.ObjectAttrParser import *
 
 # scope and scopeType for select
 # holdon, and commit together
-def sql(sqlString, sqlParams = (), scope = "sqlResult", scopeType = "array", affectId = "lastid", holdon = False):
+def sql(sqlString, sqlParams = (), scope = "sqlResult", scopeType = "object", affectId = "lastid", holdon = False):
 	def method_process(op):
 		def get_param(self, *args, **kwargs):
 			sqlParamsValue = parseObjAttr(self, sqlParams)

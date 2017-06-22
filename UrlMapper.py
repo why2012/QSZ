@@ -19,7 +19,9 @@ class UrlMapper(object):
 			(r"/pulloff_house", PullOffHouse), # 下架房源
 			(r"/delete_house_info", DeleteHouse), # 删除房源
 			(r"/update_house_photo", UpdateHousePhoto), # 修改房源照片，一次一张
+			(r"/create_house_photo", CreateHousePhoto), # 添加房源照片，一次一张
 			(r"/update_house_video", UpdateHouseVideo), # 修改房源视频
+			(r"/create_house_video", CreateHouseVideo), # 添加房源视频
 		]	
 
 	def getMapper(self):

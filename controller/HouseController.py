@@ -1,6 +1,7 @@
 # coding: utf-8
 from controller.BaseController import *
 import dependency.qcloud_video as qcloud
+import uuid
 
 # 房东身份认证
 class HouseOwnerIdentification(BaseController):
@@ -26,33 +27,80 @@ class HouseOwnerIdentification(BaseController):
 		# self._saveFileFunc(**self._saveFileFuncParams[0])
 		self.setResult([self.certname, self.idcardnumber, self.property_cert_number])
 
-# TODO
 # 房东房源列表
 class MyHouseList(BaseController):
 	@checklogin()
+	@sql("""select id, house_size, house_type, house_rent, payment_type, praise_count, status
+		from house_info where user_id=%s""", ("self.userId",), "house_info")
+	@checkparam("self.house_info", errMsg = "用户无房源", strict = True)
 	def execute(self):
-		pass
+		for house_info in self.house_info:
+			house_id = house_info["id"]
+			house_photo = self.sqlServ.SQL("""select id, photo_url from house_photo where house_id=%s""", (house_info['id'],))
+			house_video = self.sqlServ.SQL("""select id, video_clip_url from house_video where house_id=%s""", (house_info['id'],))
+			house_info["house_photo"] = house_photo
+			house_info["house_video"] = house_video
+		self.setResult(self.house_info)
 
-# TODO
+# WARN
 # 修改房源信息
 class UpdateHouseInfo(BaseController):
 	@checklogin()
+	@queryparam("attr_name")
+	@queryparam("attr_value")
+	@queryparam("house_id")
+	@sql("update house_info set %s=%s where id=%s",("self.attr_name", "self.attr_value", "self.house_id"))
 	def execute(self):
 		self.setResult()
 
-# TODO
+# 添加房源照片，一次一张
+class CreateHousePhoto(BaseController):
+	@checklogin()
+	@queryparam("house_id")
+	@invoke("import uuid; self.uuid = str(uuid.uuid1());")
+	#@checkparam("self.uuid", default = str(uuid.uuid1()))
+	@userfile("house_photo", "house_photo", uniqueidname = "uuid")
+	@sql("insert into house_photo(house_id, user_id, photo_url) values(%s, %s, %s)", ("self.house_id", "self.userId", "self.house_photo"))
+	def execute(self):
+		print self.uuid
+		self.setResult({"id": self.lastid})
+
 # 修改房源照片，一次一张
 class UpdateHousePhoto(BaseController):
 	@checklogin()
+	@queryparam("photo_id")
+	@invoke("import uuid; self.uuid = str(uuid.uuid1());")
+	#@checkparam("self.uuid", default = str(uuid.uuid1()))
+	@userfile("house_photo", "house_photo", uniqueidname = "uuid")
+	@sql("select-one photo_url from house_photo where id = %s", ("self.photo_id",), "old_photo")
+	@sql("update house_photo set photo_url = %s where id = %s", ("self.house_photo", "self.photo_id"))
+	@invoke("""
+		import os
+		if os.path.exists(self.old_photo["photo_url"]) and os.path.isfile(self.old_photo["photo_url"]):
+			os.remove(self.old_photo["photo_url"])
+		""")
 	def execute(self):
-		self.setResult()
+		self.setResult({"url": self.house_photo})
 
 # TODO
 # 修改房源视频
+class CreateHouseVideo(BaseController):
+	@checklogin()
+	@queryparam("house_id")
+	@userfile("house_video", "house_video")
+	@sql("insert into house_video(house_id, user_id, video_clip_url) values(%s, %s, %s)", ("self.house_id", "self.userId", "self.house_video"))
+	def execute(self):
+		self.setResult({"id": self.lastid})
+
+# TODO
+# 添加房源视频
 class UpdateHouseVideo(BaseController):
 	@checklogin()
+	@queryparam("video_id")
+	@userfile("house_video", "house_video")
+	@sql("update house_video set video_clip_url = %s where id = %s", ("self.house_video", "self.video_id"))
 	def execute(self):
-		self.setResult()
+		self.setResult({"url": self.house_video})
 
 # 下架房源
 class PullOffHouse(BaseController):
@@ -95,7 +143,7 @@ class HouseCreate(BaseController):
 	# 出租方式，整租1-单间2
 	@queryparam("rent_room_type", "string", optional = True, default = 0)
 	# 面积
-	@queryparam("house_area", "string", optional = True, default = 0)
+	@queryparam("house_size", "string", optional = True, default = 0)
 	# 户型
 	@queryparam("house_type", "string", optional = True, default = 0)
 	# 楼层
@@ -130,13 +178,13 @@ class HouseCreate(BaseController):
 		insert ignore into house_info(user_id, province_name, province_code, city_name, city_code, county_name, county_code, district_name, district_code,
 		house_number, longitude, latitude, rent_time_type, rent_room_type, house_size, house_type, house_floor, house_direction, house_decoration, 
 		house_max_livein, house_rent, payment_type, property_management_fee, heating_charge, description_title, description, traffic_condition, 
-		around_condition)
-		values(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+		around_condition, status)
+		values(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
 		""", ("self.userId", "self.province_name", "self.province_code", "self.city_name", "self.city_code", "self.county_name", "self.county_code",
 			"self.district_name", "self.district_code", "self.house_number", "self.longitude", "self.latitude", "self.rent_time_type",
-			"self.rent_room_type", "self.house_area", "self.house_type", "self.house_floor", "self.house_direction", "self.house_decoration",
+			"self.rent_room_type", "self.house_size", "self.house_type", "self.house_floor", "self.house_direction", "self.house_decoration",
 			"self.house_max_livein", "self.house_rent", "self.payment_type", "self.property_management_fee", "self.heating_charge",
-			"self.description_title", "self.description", "self.traffic_condition", "self.around_condition"), holdon = True)
+			"self.description_title", "self.description", "self.traffic_condition", "self.around_condition", 0), holdon = True)
 	@invoke("""
 		facilityList = self.facility.strip().split("|")
 		self.house_id = self.lastid

@@ -10,6 +10,8 @@ class TestController(BaseController):
 		for r in self.sqlResult:
 			print r
 		""")
+	@checkparam("self.aaa", "Oops", [])
+	@invoke("print self.aaa")
 	def execute(self):
 		# self.setResult(self.userId)
 		wxUserInfo = {
