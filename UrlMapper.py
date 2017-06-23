@@ -26,7 +26,7 @@ class UrlMapper(object):
 			(r"/update_house_video", UpdateHouseVideo), # 修改房源视频
 			(r"/create_house_video", CreateHouseVideo), # 添加房源视频
 
-			(r"/search_house", SearchHouseByName),
+			(r"/search_house", SearchHouseByName),# 搜索房源
 		]	
 
 	def getMapper(self):

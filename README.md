@@ -266,3 +266,23 @@ openid
   "ans": {}
 }
 ```
+
+### 搜索房源
+地址: /search_house
+
+方法: post
+
+参数
+```
+openid
+```
+
+返回
+```
+
+{
+  "status": 0,
+  "msg": "",
+  "ans": {}
+}
+```
