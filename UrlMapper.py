@@ -10,7 +10,6 @@ class UrlMapper(object):
 	def __init__(self):
 		self.mapper = [
 			(r"/test", TestController),
-			(r"/test", TestController),
 			(r"/file/(.*)", FileAccessController),
 
 			(r"/create_userinfo", UserInfoCreate), # 用户信息录入
@@ -27,7 +26,7 @@ class UrlMapper(object):
 			(r"/update_house_video", UpdateHouseVideo), # 修改房源视频
 			(r"/create_house_video", CreateHouseVideo), # 添加房源视频
 
-			(r"/search_house/byname", SearchHouseByName),
+			(r"/search_house", SearchHouseByName),
 		]	
 
 	def getMapper(self):

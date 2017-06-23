@@ -53,9 +53,12 @@ class GenericSqlService(BaseService):
 
 	# 处理操作符粘连问题
 	def preProcess(self, sqlString):
+		middleBracketCount = sqlString.count("[") + sqlString.count("]")
+		if middleBracketCount % 2 != 0:
+			raise Exception("'[' and ']' count must be even")
 		sqlCharList = []
 		for s in sqlString:
-			if s == ",":
+			if s == "," or s == "[" or s == "]":
 				sqlCharList.append(" ")
 				sqlCharList.append(s)
 				sqlCharList.append(" ")
@@ -69,6 +72,8 @@ class GenericSqlService(BaseService):
 		_originalSqlTokenList = []
 		for index, token in enumerate(sqlTokenList):
 			_token = originalSqlTokenList[index]
+			if _token == "[" or _token == "]":
+				_token = ""
 			if token == "SELECT-ONE":
 				self.select_one = True
 				token = "SELECT"
@@ -83,8 +88,17 @@ class GenericSqlService(BaseService):
 		token_type = tokenTypeMap["OTHER"]
 		local_sql_status = sqlStatusMap["START"]
 		local_sql_vars = {}
+		startContinue = False # 跳过[]之间部分
 		for index, token in enumerate(sqlTokenList):
-
+			#print token, startContinue
+			if token == "[":
+				startContinue = True
+				continue
+			if token == "]":
+				startContinue = False
+				continue
+			if startContinue:
+				continue
 			if local_sql_status == sqlStatusMap["START"]:
 				local_sql_status = sqlStatusMap["AFTER_FIRST_OPRAND"]
 				if token == "SELECT":
@@ -105,6 +119,9 @@ class GenericSqlService(BaseService):
 				if token_type == tokenTypeMap["SELECT"]:
 					if token == ",":
 						self.retrieveAttrMap(index,token, local_sql_vars, sqlTokenList, originalSqlTokenList)
+						local_sql_vars["last_comma_index"] = index
+						continue
+					if token == ".":
 						local_sql_vars["last_comma_index"] = index
 						continue
 					if token == "AS":

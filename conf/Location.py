@@ -10,8 +10,12 @@ city_code = {
 }
 
 def loc_distance(longA, latA, longB, latB):
-	a = float(radians(latA) - radians(latB))
-	b = float(radians(longA) - radians(longB))
+	latA = radians(latA)
+	latB = radians(latB)
+	longA = radians(longA)
+	longB = radians(longB)
+	a = float(latA - latB)
+	b = float(longA - longB)
 	S = 2 * asin(sqrt( pow(sin(a / 2), 2) + cos(latA) * cos(latB) * pow(sin(b / 2), 2) )) * 6378.137
 	return S
 
