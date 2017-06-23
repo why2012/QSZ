@@ -2,7 +2,7 @@
 from math import asin, sin, cos, pow, sqrt, radians
 
 # 默认东经，北纬, 半径单位km
-# level 1 省 2 市 3 区县
+# level 1 省 2 市 3 区县 4 地标
 city_code = {
 	"100": {},
 	"100010": {"name": "四川", "code": 10, "parentCode": "1", "level": 1, "abbr": "sc", "longitude": 104, "latitude": 30, "radius": 500},
@@ -17,6 +17,15 @@ def loc_distance(longA, latA, longB, latB):
 
 def loc_distance_obj(objA, objB):
 	return loc_distance(objA["longitude"], objA["latitude"], objB["longitude"], objB["latitude"])
+
+def findCity(city):
+	if city['level'] == 2 or city['level'] == 1:
+		return city
+	if city['level'] >= 3:
+		if city["parentCode"] in city_code:
+			return findCity(city_code[city["parentCode"]])
+		else:
+			return None
 
 def findCityByLL(longi, lati):
 	resultCity = None;
