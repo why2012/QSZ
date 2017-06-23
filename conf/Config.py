@@ -5,9 +5,11 @@ if DEV:
 else:
 	from OnlineConfig import * 
 
+from Location import *
+
 AES_KEY = "skitfn,.|1-AJ*2^"
 TOKEN_HEADER = "QSZ_TOKEN"
-TOKEN_EXPIRE = 3600 * 24
+TOKEN_EXPIRE = 3600 * 24 * 5
 TOKEN_NAME = "token"
 
 WX_ACCESS_TOKEN_KEY = "wx_access_token"

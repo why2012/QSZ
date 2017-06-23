@@ -36,15 +36,15 @@ class BaseController(web.RequestHandler):
 		self.db = mysql.connect(host = db_config["host"], user = db_config["user"], passwd = db_config["pwd"], db = db_config["db"], port = db_config["port"], charset = db_config["charset"], use_unicode = True)
 		self.cursor = self.db.cursor()
 
-	def post(self):
-		self.invokeExecute()
+	def post(self, *args):
+		self.invokeExecute(*args)
 
-	def get(self):
-		self.invokeExecute()
+	def get(self, *args):
+		self.invokeExecute(*args)
 
-	def invokeExecute(self):
+	def invokeExecute(self, *args):
 		try:
-			self.execute()
+			jsonobj = self.execute(*args)
 		except LoginException, e:
 			self.setResult(status = e.getCode(), msg = e.getMsg())
 		except ErrorStatusException, e:
@@ -57,6 +57,8 @@ class BaseController(web.RequestHandler):
 		finally:
 			if self.db:
 				self.db.close()
+			if self.result is None and jsonobj is not None:
+				self.result = {"status": STATUS_OK, "ans": jsonobj, "msg": ""}
 			if self.result is not None:
 				self.set_header('Content-Type', 'application/json')
 				self.jsonWrite(self.result)

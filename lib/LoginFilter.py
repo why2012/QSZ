@@ -29,7 +29,8 @@ def checklogin(enbale_check = True):
 					print traceback.format_exc()
 					raise e
 			else:
-				op(self, *args, **kwargs)
+				_fresult = op(self, *args, **kwargs)
+				return _fresult
 
 		def warnLoginOut(self):
 			raise LoginException("Login first.", STATUS_LOGIN_ERROR)	

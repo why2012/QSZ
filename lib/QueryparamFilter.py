@@ -26,7 +26,10 @@ def queryparam(paramName, ptype = "string", optional = False, default = None):
 				paramValue = self.getArg(paramName, default)
 			if not optional and (paramValue is None or (ptype == "string" and paramValue == "")):
 				raise ErrorStatusException("Query param %s is None" % paramName, STATUS_PARAM_ERROR)
+			if isinstance(paramValue, str):
+				paramValue = paramValue.replace("<", "&lt").replace(">", "&gt")
 			setattr(self, paramName, paramValue)
-			op(self, *args, **kwargs)
+			_fresult = op(self, *args, **kwargs)
+			return _fresult
 		return get_param
 	return method_process

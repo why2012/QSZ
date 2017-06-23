@@ -2,6 +2,8 @@
 from controller.BaseController import *
 import dependency.qcloud_video as qcloud
 import uuid
+import time
+import datetime
 
 # 房东身份认证
 class HouseOwnerIdentification(BaseController):
@@ -30,11 +32,14 @@ class HouseOwnerIdentification(BaseController):
 # 房东房源列表
 class MyHouseList(BaseController):
 	@checklogin()
-	@sql("""select id, house_size, house_type, house_rent, payment_type, praise_count, status
+	@sql("""select id, house_size, house_type, house_rent, payment_type, praise_count, status, create_date
 		from house_info where user_id=%s""", ("self.userId",), "house_info")
 	@checkparam("self.house_info", errMsg = "用户无房源", strict = True)
 	def execute(self):
 		for house_info in self.house_info:
+			create_unixtime_dur = time.time() - time.mktime(house_info["create_date"].timetuple()) 
+			house_info["create_date"] = house_info["create_date"].strftime("%Y-%d-%m")
+			house_info["create_time_duration"] = int(create_unixtime_dur)
 			house_id = house_info["id"]
 			house_photo = self.sqlServ.SQL("""select id, photo_url from house_photo where house_id=%s""", (house_info['id'],))
 			house_video = self.sqlServ.SQL("""select id, video_clip_url from house_video where house_id=%s""", (house_info['id'],))
@@ -178,13 +183,13 @@ class HouseCreate(BaseController):
 		insert ignore into house_info(user_id, province_name, province_code, city_name, city_code, county_name, county_code, district_name, district_code,
 		house_number, longitude, latitude, rent_time_type, rent_room_type, house_size, house_type, house_floor, house_direction, house_decoration, 
 		house_max_livein, house_rent, payment_type, property_management_fee, heating_charge, description_title, description, traffic_condition, 
-		around_condition, status)
-		values(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+		around_condition, status, praise_count)
+		values(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
 		""", ("self.userId", "self.province_name", "self.province_code", "self.city_name", "self.city_code", "self.county_name", "self.county_code",
 			"self.district_name", "self.district_code", "self.house_number", "self.longitude", "self.latitude", "self.rent_time_type",
 			"self.rent_room_type", "self.house_size", "self.house_type", "self.house_floor", "self.house_direction", "self.house_decoration",
 			"self.house_max_livein", "self.house_rent", "self.payment_type", "self.property_management_fee", "self.heating_charge",
-			"self.description_title", "self.description", "self.traffic_condition", "self.around_condition", 0), holdon = True)
+			"self.description_title", "self.description", "self.traffic_condition", "self.around_condition", 0, 0), holdon = True)
 	@invoke("""
 		facilityList = self.facility.strip().split("|")
 		self.house_id = self.lastid

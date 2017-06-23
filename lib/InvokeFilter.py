@@ -27,6 +27,7 @@ def invoke(codeString):
 				lines[index] = line.replace("\t", "", tCount)
 			_codeString = "\n".join(lines)
 			exec _codeString in globals(), locals()
-			op(self, *args, **kwargs)
+			_fresult = op(self, *args, **kwargs)
+			return _fresult
 		return get_param
 	return method_process

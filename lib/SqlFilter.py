@@ -16,6 +16,7 @@ def sql(sqlString, sqlParams = (), scope = "sqlResult", scopeType = "object", af
 				setattr(self, "sqlServ", sqlServ)
 			sqlServ = getattr(self, "sqlServ")
 			sqlServ.SQL(sqlString, sqlParamsValue, scope, scopeType, affectId, holdon)
-			op(self, *args, **kwargs)
+			_fresult = op(self, *args, **kwargs)
+			return _fresult
 		return get_param
 	return method_process

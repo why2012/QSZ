@@ -7,6 +7,7 @@ def service(serviceName, variableName, servicePath = "service", **servkwargs):
 			servModule = importlib.import_module(servicePath + "." + serviceName)
 			serv = getattr(servModule, serviceName)
 			setattr(self, variableName, serv(self.db, self.cursor, **servkwargs))
-			op(self, *args, **kwargs)
+			_fresult = op(self, *args, **kwargs)
+			return _fresult
 		return get_service
 	return method_process

@@ -34,10 +34,11 @@ def userfile(filename, newfilename, useridname = "userId", basepath = "data/user
 					self._saveFileFunc = saveFileFunc
 					self._saveFileFuncParams.append({"self": self, "upfilename": upfilename, "filename": filename, "newfilepath": newfilepath, "overwrite": overwrite, "uniqueidname": _uniqueidname, "newfilename": newfilename})
 					# self._saveFileFunc(**self._saveFileFuncParams[0])
-					op(self, *args, **kwargs)
-					return
+					_fresult = op(self, *args, **kwargs)
+					return _fresult
 			saveFileFunc(self, upfilename, filename, newfilepath, overwrite, None, newfilename)
-			op(self, *args, **kwargs)
+			_fresult = op(self, *args, **kwargs)
+			return _fresult
 		return get_param
 
 	def saveFileFunc(self, upfilename, filename, newfilepath, overwrite, uniqueidname = None, newfilename = None):

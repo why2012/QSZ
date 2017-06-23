@@ -1,14 +1,18 @@
 # coding: utf-8
 from controller.TestController import *
+from controller.FileAccessController import *
 from controller.UserController import *
 from controller.HouseController import *
+from controller.FindHouseController import *
 
 class UrlMapper(object):
 
 	def __init__(self):
 		self.mapper = [
 			(r"/test", TestController),
-			
+			(r"/test", TestController),
+			(r"/file/(.*)", FileAccessController),
+
 			(r"/create_userinfo", UserInfoCreate), # 用户信息录入
 			(r"/wx_fetch_userinfo", WxFetchUserInfo), # openid换取用户信息
 			(r"/user_identification", UserRealNameIdentification), # 实名认证
@@ -22,6 +26,8 @@ class UrlMapper(object):
 			(r"/create_house_photo", CreateHousePhoto), # 添加房源照片，一次一张
 			(r"/update_house_video", UpdateHouseVideo), # 修改房源视频
 			(r"/create_house_video", CreateHouseVideo), # 添加房源视频
+
+			(r"/search_house/byname", SearchHouseByName),
 		]	
 
 	def getMapper(self):
