@@ -205,11 +205,10 @@ CREATE_TABLE_POSITION = """
 
 CREATE_TABLE_INVITE = """ 
 						CREATE TABLE IF NOT EXISTS %s (
-							id INT UNSIGNED AUTO_INCREMENT,
 							user_id INT UNSIGNED NOT NULL,
 							my_invite_code VARCHAR(20) DEFAULT '00000000' COMMENT '0xid',
 							friend_invite_code VARCHAR(20) DEFAULT '-1',
-							PRIMARY KEY (id),
+							PRIMARY KEY (user_id),
 							CONSTRAINT invite_user_info_fk FOREIGN KEY (user_id) REFERENCES %s(id),
 							INDEX my_invite_code_index(my_invite_code),
 							INDEX friend_invite_code_index(friend_invite_code)

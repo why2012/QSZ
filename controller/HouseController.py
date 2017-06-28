@@ -68,7 +68,7 @@ class CreateHousePhoto(BaseController):
 	@sql("insert into house_photo(house_id, user_id, photo_url) values(%s, %s, %s)", ("self.house_id", "self.userId", "self.house_photo"))
 	def execute(self):
 		print self.uuid
-		self.setResult({"id": self.lastid})
+		self.setResult({"id": self.lastid, "url": self.house_photo})
 
 # 修改房源照片，一次一张
 class UpdateHousePhoto(BaseController):
@@ -95,7 +95,7 @@ class CreateHouseVideo(BaseController):
 	@userfile("house_video", "house_video")
 	@sql("insert into house_video(house_id, user_id, video_clip_url) values(%s, %s, %s)", ("self.house_id", "self.userId", "self.house_video"))
 	def execute(self):
-		self.setResult({"id": self.lastid})
+		self.setResult({"id": self.lastid, "url": self.house_video})
 
 # TODO
 # 添加房源视频

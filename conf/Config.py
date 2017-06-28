@@ -1,5 +1,5 @@
 # coding: utf-8
-DEV = False
+DEV = True
 if DEV:
 	from DevConfig import * 
 else:

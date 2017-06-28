@@ -22,7 +22,8 @@ def checklogin(enbale_check = True):
 							warnLoginOut(self)
 						else:
 							self.userId = userId
-							op(self, *args, **kwargs)
+							_fresult = op(self, *args, **kwargs)
+							return _fresult
 					else:
 						warnLoginOut(self)
 				except Exception, e:

@@ -286,3 +286,41 @@ openid
   "ans": {}
 }
 ```
+
+### 获取邀请码
+地址: /invitation/getcode
+
+方法: get
+
+参数
+```
+```
+
+返回
+```
+
+{
+  "status": 0,
+  "msg": "",
+  "ans": {}
+}
+```
+
+### 填写邀请码
+地址: /invitation/setcode
+
+方法: get
+
+参数
+```
+```
+
+返回
+```
+
+{
+  "status": 0,
+  "msg": "",
+  "ans": {}
+}
+```

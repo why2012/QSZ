@@ -9,20 +9,20 @@ def checkparam(attrName, errMsg = "Oops, an error has occured", strict = False, 
 				_attrName = _attrName[5:]
 			if default is None:
 				if not hasattr(self, _attrName):
-					raise Exception(errMsg)
+					raise Exception(errMsg, STATUS_PARAM_ERROR)
 				if strict:
 					attr = getattr(self, _attrName)
 					if attr is None:
-						raise Exception(errMsg)
+						raise Exception(errMsg, STATUS_PARAM_ERROR)
 					if isinstance(attr, list) and len(attr) == 0:
-						raise Exception(errMsg)
+						raise Exception(errMsg, STATUS_PARAM_ERROR)
 					if isinstance(attr, tuple) and len(attr) == 0:
-						raise Exception(errMsg)
+						raise Exception(errMsg, STATUS_PARAM_ERROR)
 					if isinstance(attr, dict) and len(attr) == 0:
-						raise Exception(errMsg)
+						raise Exception(errMsg, STATUS_PARAM_ERROR)
 				else:
 					if getattr(self, _attrName) is None:
-						raise Exception(errMsg)
+						raise Exception(errMsg, STATUS_PARAM_ERROR)
 			else:
 				if not hasattr(self, _attrName):
 					setattr(self, _attrName, default)
