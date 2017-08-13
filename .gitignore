@@ -9,3 +9,4 @@ nohup.out
 *.circledata
 *.qrdata
 *.read
+/data

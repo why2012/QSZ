@@ -8,10 +8,10 @@ case "$@" in
 		python MainApplication.py
 		;;
 	dev-deploy)
-		ssh -t why@119.29.113.28 "bash -c 'cd /QSZ/QSZ && git stash && git pull && sudo docker restart tornado-env'"
+		ssh -t why@119.29.113.28 "bash -c 'cd /QSZ/QSZ && git branch && git stash && git pull && sudo docker restart tornado-env'"
 		;;
 	online-deploy)
-		ssh -t why@119.29.113.28 "bash -c 'cd /QSZ/QSZ && git checkout master && git stash && git pull && sudo docker restart tornado-env'"
+		ssh -t why@119.29.113.28 "bash -c 'cd /QSZ/QSZ && git checkout master && git branch && git stash && git pull && sudo docker restart tornado-env'"
 		;;
 	rollback)
 		ssh -t why@119.29.113.28 "bash -c 'cd /QSZ/QSZ && git reset --hard HEAD^ && sudo docker restart tornado-env'"
