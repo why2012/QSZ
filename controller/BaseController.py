@@ -115,6 +115,28 @@ class BaseController(web.RequestHandler):
 		elif raiseException:
 			raise ErrorStatusException(name + " must not be None", STATUS_PARAM_ERROR)
 
+	@property
+	def remote_ip(self):
+		return self.request.remote_ip 
+
+	@property
+	def post_body(self):
+		return self.request.body
+
+	@property
+	def local_ip():
+		import socket
+    	s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    	try:
+        	# doesn't even have to be reachable
+        	s.connect(('10.255.255.255', 0))
+        	IP = s.getsockname()[0]
+    	except:
+        	IP = '127.0.0.1'
+    	finally:
+        	s.close()
+    	return IP
+
 	def getIntArg(self, key, default = -1):
 		arg = self.getArg(key, default)
 		if not arg or arg is None:
