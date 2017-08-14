@@ -126,16 +126,16 @@ class BaseController(web.RequestHandler):
 	@property
 	def local_ip():
 		import socket
-    	s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    	try:
-        	# doesn't even have to be reachable
-        	s.connect(('10.255.255.255', 0))
-        	IP = s.getsockname()[0]
-    	except:
-        	IP = '127.0.0.1'
-    	finally:
-        	s.close()
-    	return IP
+    		s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    		try:
+        		# doesn't even have to be reachable
+        		s.connect(('10.255.255.255', 0))
+        		IP = s.getsockname()[0]
+    		except:
+        		IP = '127.0.0.1'
+    		finally:
+        		s.close()
+    		return IP
 
 	def getIntArg(self, key, default = -1):
 		arg = self.getArg(key, default)
