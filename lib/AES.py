@@ -30,6 +30,6 @@ class AES():
      
     #解密后，去掉补足的空格用strip() 去掉
     def decrypt(self,text):
-        cryptor = CAES.new(self.key,self.mode,b'0000000000000000')
+        cryptor = CAES.new(self.key, self.mode, b'0000000000000000')
         plain_text  = cryptor.decrypt(a2b_hex(text))
         return plain_text.rstrip('\0')

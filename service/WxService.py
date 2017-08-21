@@ -5,7 +5,7 @@ import urllib2 as url
 import json
 import xml.dom.minidom as xmldom
 import uuid
-import util.encrypt
+from util.encrypt import *
 import requests
 
 class WxService(BaseService):
