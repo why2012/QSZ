@@ -66,12 +66,18 @@ class BaseController(web.RequestHandler):
 				self.set_header('Content-Type', 'application/json')
 				self.jsonWrite(self.result)
 				self.logger.info(self.oneLine(str(self.getAllArgs())) + "; " + json.dumps(self.result, ensure_ascii = False))
+			if self.resultBody is not None:
+				self.rawTextWrite(self.resultBody)
+				self.logger.info(self.resultBody)
 
 	def execute(self):
 		pass
 
 	def jsonWrite(self, data):
 		self.write(json.dumps(data, ensure_ascii = False))
+
+	def rawTextWrite(self, text):
+		self.write(text)
 
 	def jsonDump(self, data):
 		return json.dumps(data, ensure_ascii = False)
@@ -126,16 +132,16 @@ class BaseController(web.RequestHandler):
 	@property
 	def local_ip():
 		import socket
-    	s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    	try:
+		s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+		try:
         	# doesn't even have to be reachable
-        	s.connect(('10.255.255.255', 0))
-        	IP = s.getsockname()[0]
-    	except:
-        	IP = '127.0.0.1'
-    	finally:
-        	s.close()
-    	return IP
+			s.connect(('10.255.255.255', 0))
+			IP = s.getsockname()[0]
+		except:
+			IP = '127.0.0.1'
+		finally:
+			s.close()
+			return IP
 
 	def getIntArg(self, key, default = -1):
 		arg = self.getArg(key, default)

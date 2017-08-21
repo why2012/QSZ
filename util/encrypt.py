@@ -5,14 +5,15 @@ import hashlib
 def WxParamEncrypt(args, wxkey = ""):
 	noEmpty = {}
 	for key, value in args.items():
-		if type(type) != "str":
+		if type(value) != "str":
 			value = str(value)
 		if value != "" and value is not None:
 			noEmpty[key] = value
-	noEmpty.keys().sort()
-	argsString = ""
+	keys = noEmpty.keys()
+	keys.sort()
 	args = []
-	for key, value in noEmpty.items():
+	for key in keys:
+		value = noEmpty[key]
 		args.append(key + "=" + value)
 	argsString = "&".join(args)
 	argsString += "&key=" + wxkey
@@ -21,6 +22,31 @@ def WxParamEncrypt(args, wxkey = ""):
 	md5 = hashlib.md5() 
 	md5.update(argsString)
 	sign = md5.hexdigest().upper()
+	return sign
+
+def AliParamEncrypt(args, secretKey = ""):
+	import rsa
+	import base64
+
+	noEmpty = {}
+	for key, value in args.items():
+		if type(value) != "str":
+			value = str(value)
+		if value != "" and value is not None:
+			noEmpty[key] = value
+	keys = noEmpty.keys()
+	keys.sort()
+	argsString = ""
+	args = []
+	for key in keys:
+		value = noEmpty[key]
+		args.append(key + "=" + value)
+	argsString = "&".join(args)
+	# print args
+	# print argsString
+	secretKey = "-----BEGIN RSA PRIVATE KEY-----\n" + secretKey + "\n-----END RSA PRIVATE KEY-----"
+	privkey = rsa.PrivateKey.load_pkcs1(secretKey)
+	sign = base64.b64encode(rsa.sign(argsString, privkey, "SHA-256"))
 	return sign
 
 

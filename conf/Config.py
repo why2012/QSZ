@@ -7,6 +7,8 @@ else:
 
 from WxPayment import *
 
+from AliPayment import *
+
 from Location import *
 
 AES_KEY = "skitfn,.|1-AJ*2^"
