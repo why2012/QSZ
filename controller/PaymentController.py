@@ -63,7 +63,7 @@ class AliPaymentNotifyController(BaseController):
 	def execute(self):
 		notifyObj = self.aliService.constructNotifyObj(self)
 		# sign 验签
-		checkResult = self.aliService.checkNotifyObj(notifyObj)
+		checkResult = self.aliService.checkNotifyObj(notifyObj, AliPayment)
 		if checkResult:
 			# todo: 业务处理
 
@@ -71,26 +71,75 @@ class AliPaymentNotifyController(BaseController):
 		else:
 			self.resultBody = "[failed]sign check failed."
 
-# todo: 支付宝，获取引导用户授权url
+# 支付宝，获取引导用户授权url
 class AliUserInfoAuthUrl(BaseController):
 	@checklogin()
 	@service("AliService", "aliService")
 	def execute(self):
-		pass
+		authObj = self.aliService.constructUserAuthObj(AliPayment)
+		userauth_url = self.aliService.getUserAuthUrl(authObj)
+		return {result: "SUCCESS", "payment_url": userauth_url}
 
-# todo: 支付宝，获取auth token后, 获取用户信息
+# 支付宝, 回调，获取auth token后, 获取用户信息
 class AliFetchUserInfo(BaseController):
 	@checklogin()
 	@service("AliService", "aliService")
 	def execute(self):
-		pass
+		fetchUserInfoObj = self.aliService.constructFetchUserInfoObj(self)
+		userInfo = self.aliService.fetchUserInfo(AliPayment, fetchUserInfoObj)
+		# todo: 业务处理
+		if userInfo["result"]:
+			pass
+		else:
+			pass
 
-# todo: 支付宝，企业转账
+# 支付宝，企业转账
 class AliEnterpriseTransfer(BaseController):
 	@checklogin()
 	@service("AliService", "aliService")
 	def execute(self):
-		pass
+		out_trade_no = "" # 订单号
+		payee_type = "ALIPAY_USERID" # 账户类型
+		payee_account = "" # 用户支付宝账户
+		amount = "" # 金额，单位元
+		remark = "" # 转账备注
+		transferObj = self.aliService.constructTransferObj(notifyObj, out_trade_no, payee_type, payee_account, amount, remark)
+		transacObj = self.aliService.sendFeeTransfer(transferObj)
+		resultObj = {"result": "FAIL"}
+		if transacObj["result"]:
+			# todo: 转账成功， 业务处理
+			resultObj["result"] = "SUCCESS"
+		else:
+			# 转账失败， 业务处理， 日志记录
+			pass
+
+		return resultObj
+
+# 开发者获取支付宝应用的auth_code和auth_token， 回调
+# https://docs.open.alipay.com/common/105193
+# 调用url https://openauth.alipay.com/oauth2/appToAppAuth.htm?app_id=2015101400446982&redirect_uri=http%3A%2F%2Fexample.com
+class AliGetAuthCode(BaseController):
+	@service("AliService", "aliService")
+	def execute(self):
+		import requests
+
+		app_id = self.getStrArg("app_id")
+		app_auth_code = self.getStrArg("app_auth_code")
+		response = requests.get("alipay.open.auth.token.app", {"grant_type": "authorization_code", "code": app_auth_code})
+		responseObj = response.json()
+
+		authObj = {}
+		authObj["app_auth_token"] = responseObj["alipay_open_auth_token_app_response"]["app_auth_token"]
+		authObj["app_refresh_token"] = responseObj["alipay_open_auth_token_app_response"]["app_refresh_token"]
+		authObj["expires_in"] = responseObj["alipay_open_auth_token_app_response"]["expires_in"]
+		authObj["re_expires_in"] = responseObj["alipay_open_auth_token_app_response"]["re_expires_in"]
+		authObj["code"] = responseObj["alipay_open_auth_token_app_response"]["code"]
+		authObj["msg"] = responseObj["alipay_open_auth_token_app_response"]["msg"]
+
+		self.aliService.aliModel.insertAppToken(authObj["app_auth_token"], authObj["expires_in"], int(time.time()), authObj["app_refresh_token"], authObj["re_expires_in"])
+
+		return authObj
+
 
 
 
