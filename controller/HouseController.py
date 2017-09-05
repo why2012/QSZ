@@ -87,8 +87,7 @@ class UpdateHousePhoto(BaseController):
 	def execute(self):
 		self.setResult({"url": self.house_photo})
 
-# TODO
-# 修改房源视频
+# todo: 修改房源视频
 class CreateHouseVideo(BaseController):
 	@checklogin()
 	@queryparam("house_id")
@@ -97,8 +96,7 @@ class CreateHouseVideo(BaseController):
 	def execute(self):
 		self.setResult({"id": self.lastid, "url": self.house_video})
 
-# TODO
-# 添加房源视频
+# todo: 添加房源视频
 class UpdateHouseVideo(BaseController):
 	@checklogin()
 	@queryparam("video_id")

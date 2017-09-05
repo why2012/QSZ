@@ -10,3 +10,4 @@ nohup.out
 *.qrdata
 *.read
 /data
+/secret-data/

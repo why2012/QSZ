@@ -49,5 +49,45 @@ def AliParamEncrypt(args, secretKey = ""):
 	sign = base64.b64encode(rsa.sign(argsString, privkey, "SHA-256"))
 	return sign
 
+def AliParamVerify(args, publicKey = ""):
+	from urllib import unquote
+	import rsa
+	import base64
+
+	sign = base64.b64decode(args["sign"])
+	paymentObj = {}
+	for key, value in args.items():
+		if key != "sign" and key != "sign_type":
+			if type(value) != "str":
+				value = str(value)
+			paymentObj[key] = unquote(value)
+
+	noEmpty = {}
+	for key, value in paymentObj.items():
+		if value != "" and value is not None:
+			noEmpty[key] = value
+	keys = noEmpty.keys()
+	keys.sort()
+	argsString = ""
+	args = []
+	for key in keys:
+		value = noEmpty[key]
+		args.append(key + "=" + value)
+	argsString = "&".join(args)
+	message = argsString
+	# print args
+	# print message
+
+	publicKey = "-----BEGIN PUBLIC KEY-----\n" + publicKey + "\n-----END PUBLIC KEY-----"
+	pubKey = rsa.PublicKey.load_pkcs1_openssl_pem(publicKey)
+	return rsa.verify(message, sign, pubKey)
+
+
+
+
+
+
+
+
 
 

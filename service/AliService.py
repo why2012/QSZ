@@ -6,10 +6,11 @@ import uuid
 from util.encrypt import *
 import requests
 import time
+from model.AliModel import AliModel
 
 class AliService(BaseService):
 	def __init__(self, db, cursor):
-		pass
+		self.aliModel = AliModel(db, cursor)
 
 	def constructPaymentObj(self, configObj, bodyDesc, subjectTitle, out_trade_no, total_amount_fee):
 		paymentObj = {}
@@ -93,35 +94,166 @@ class AliService(BaseService):
 
 	# todo: 验证签名
 	# doc: https://docs.open.alipay.com/203/105286
-	def checkNotifyObj(self, notifyObj):
-		return True
+	def checkNotifyObj(self, configObj, notifyObj):
+		result = False;
+		try:
+			result = AliParamVerify(notifyObj, configObj["public_key"], configObj["secret_key"])
+		except:
+			pass
+		finally:
+			return result
 
-	# todo: 企业向个人转账 obj
+	# 企业向个人转账 obj
 	# doc https://docs.open.alipay.com/api_28/alipay.fund.trans.toaccount.transfer
-	def constructTransferObj(self):
-		pass
+	# 配置数据， 订单号， 收款用户账户类型[ALIPAY_USERID-用户id， 2088开头； ALIPAY_LOGONID：用户支付宝登录号，邮箱或手机号]
+	# 用户id，转账金额
+	def constructTransferObj(self, configObj, out_biz_no, payee_type, payee_account, amount, remark = ""):
+		transferObj = {}
+		transferObj["app_id"] = configObj["appid"]
+		transferObj["method"] = configObj["transfer"]["method"]
+		transferObj["charset"] = configObj["transfer"]["charset"]
+		transferObj["sign_type"] = configObj["transfer"]["sign_type"]
+		transferObj["timestamp"] = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+		transferObj["version"] = configObj["transfer"]["version"]
+		biz_content_obj = {}
+		biz_content_obj["out_biz_no"] = out_biz_no
+		biz_content_obj["payee_type"] = payee_type
+		biz_content_obj["payee_account"] = payee_account
+		biz_content_obj["amount"] = amount
+		biz_content_obj["remark"] = remark
+		transferObj["biz_content_json"] = json.dumps(biz_content_obj, ensure_ascii = False)
+		transferObj["sign"] = AliParamEncrypt(transferObj, configObj["secret_key"])
+		transferObj["url_domain"] = configObj["transfer"]["domain_url"]
 
-	# todo: 企业向个人转账
+		return transferObj
+
+	# 企业向个人转账
+	# 状态码 https://docs.open.alipay.com/common/105806
 	def sendFeeTransfer(self, transferObj):
-		pass
+		url_domain = transferObj["url_domain"]
+		del transferObj["url_domain"]
+		response = requests.get(url_domain, params = transferObj)
+		responseObj = response.json()
+		transacObj = {}
+		transacObj["sign"] = responseObj["sign"]
+		transacObj["code"] = responseObj["alipay_fund_trans_toaccount_transfer_response"]["code"]
+		transacObj["msg"] = responseObj["alipay_fund_trans_toaccount_transfer_response"]["msg"]
+		if "out_biz_no" in responseObj["alipay_fund_trans_toaccount_transfer_response"]:
+			transacObj["out_biz_no"] = responseObj["alipay_fund_trans_toaccount_transfer_response"]
+		if "order_id" in responseObj["alipay_fund_trans_toaccount_transfer_response"]:
+			transacObj["order_id"] = responseObj["alipay_fund_trans_toaccount_transfer_response"]["order_id"]
+		if "pay_date" in responseObj["alipay_fund_trans_toaccount_transfer_response"]:
+			transacObj["pay_date"] = responseObj["alipay_fund_trans_toaccount_transfer_response"]["pay_date"]
+		if "sub_code" in responseObj["alipay_fund_trans_toaccount_transfer_response"]:
+			transacObj["sub_code"] = responseObj["alipay_fund_trans_toaccount_transfer_response"]["sub_code"]
+		if "sub_msg" in responseObj["alipay_fund_trans_toaccount_transfer_response"]:
+			transacObj["sub_msg"] = responseObj["alipay_fund_trans_toaccount_transfer_response"]["sub_msg"]
+		if transacObj["code"] != "10000"
+			transacObj["result"] = False
+		else:
+			transacObj["result"] = True
+		return transacObj
 
-	# todo: 引导用户授权urlobj
+	# 引导用户授权urlobj
 	# doc https://docs.open.alipay.com/289/105656
-	def constructUserAuthObj(self):
-		pass
+	def constructUserAuthObj(self, configObj):
+		authObj = {}
+		authObj["app_id"] = configObj["appid"]
+		authObj["scope"] = configObj["usercode"]["scope"]
+		authObj["redirect_uri"] = configObj["usercode"]["redirect_uri"]
+		# todo: random state and record check
+		authObj["state"] = "11875rt."
+		authObj["domain_url"] =  configObj["usercode"]["domain_url"]
 
-	# todo: 引导用户授权url
-	def getUserAuthUrl(self):
-		pass
+		return authObj
 
-	# todo: 获取用户信息 obj
-	# doc https://docs.open.alipay.com/api_2/alipay.user.userinfo.share
-	def constructFetchUserInfoObj(self):
-		pass
+	# 引导用户授权url, 获取auth_code
+	def getUserAuthUrl(self, authObj):
+		url_domain = authObj["domain_url"]
+		return url_domain + "?app_id=" + authObj["app_id"] + "&scope=" + authObj["scope"] + "&redirect_uri=" + authObj["redirect_uri"] + "&state=" + authObj["state"]
 
-	# todo: 获取用户信息
-	def fetchUserInfo(self, userInfoObj):
-		pass
+	# https://docs.open.alipay.com/common/105193
+	def getAppAuthToken(self):
+		app_auth_token, is_expired, refresh_token, re_expire_in = self.aliModel.getAppToken()
+		if app_auth_token == 0:
+			app_auth_token = self.getAppAuthToken()
+		else if is_expired:
+			app_auth_token = self.refreshAppAuthToken(refresh_token)
+		return app_auth_token
+
+	def refreshAppAuthToken(self, refresh_token):
+		response = requests.get("alipay.open.auth.token.app", {"grant_type": "refresh_token", "refresh_token": refresh_token})
+		responseObj = response.json()
+		authObj = {}
+		authObj["app_auth_token"] = responseObj["alipay_open_auth_token_app_response"]["app_auth_token"]
+		authObj["app_refresh_token"] = responseObj["alipay_open_auth_token_app_response"]["app_refresh_token"]
+		authObj["expires_in"] = responseObj["alipay_open_auth_token_app_response"]["expires_in"]
+		authObj["re_expires_in"] = responseObj["alipay_open_auth_token_app_response"]["re_expires_in"]
+		authObj["code"] = responseObj["alipay_open_auth_token_app_response"]["code"]
+		authObj["msg"] = responseObj["alipay_open_auth_token_app_response"]["msg"]
+
+		self.aliModel.insertAppToken(authObj["app_auth_token"], authObj["expires_in"], int(time.time()), authObj["app_refresh_token"], authObj["re_expires_in"])
+
+		return authObj["app_auth_token"]
+
+	# 为避免获取app_auth_code，此处直接读取配置信息
+	def getAppAuthToken(self):
+		return AliPayment["app_startup_auth_token"]
+
+	# 回调，获取用户信息 obj
+	# doc https://docs.open.alipay.com/289/105656
+	def constructFetchUserInfoObj(self, baseController):
+		notifyObj = {}
+		notifyObj["app_id"] = baseController.getStrArg("app_id")
+		notifyObj["scope"] = baseController.getStrArg("scope")
+		notifyObj["error_scope"] = baseController.getStrArg("error_scope")
+		notifyObj["state"] = baseController.getStrArg("state")
+		notifyObj["auth_code"] = baseController.getStrArg("auth_code")
+		notifyObj["app_auth_token"] = self.getAppAuthToken()
+
+	# 获取用户信息, https://docs.open.alipay.com/api_9/alipay.system.oauth.token
+	def fetchUserInfo(self, configObj, userInfoObj):
+		url_domain = configObj["userauth"]["domain_url"]
+		requestObj = {}
+		requestObj["app_id"] = configObj["appid"]
+		requestObj["method"] = configObj["userauth"]["method"]
+		requestObj["charset"] = configObj["userauth"]["charset"]
+		requestObj["sign_type"] = configObj["userauth"]["sign_type"]
+		requestObj["timestamp"] = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+		requestObj["version"] = configObj["userauth"]["version"]
+		requestObj["app_auth_token"] = userInfoObj["app_auth_token"]
+		requestObj["grant_type"] = configObj["userauth"]["grant_type"]
+		requestObj["code"] = userInfoObj["code"]
+		requestObj["sign"] = AliParamEncrypt(requestObj, configObj["secret_key"])
+		response = requests.get(url_domain, params = requestObj)
+		responseObj = response.json()
+		transacObj = {}
+		if "user_id" in transacObj["alipay_system_oauth_token_response"]:
+			transacObj["user_id"] = transacObj["alipay_system_oauth_token_response"]["user_id"]
+		if "access_token" in transacObj["alipay_system_oauth_token_response"]:
+			transacObj["access_token"] = transacObj["alipay_system_oauth_token_response"]["access_token"]
+		if "expires_in" in transacObj["alipay_system_oauth_token_response"]:
+			transacObj["expires_in"] = transacObj["alipay_system_oauth_token_response"]["expires_in"]
+		if "refresh_token" in transacObj["alipay_system_oauth_token_response"]:
+			transacObj["refresh_token"] = transacObj["alipay_system_oauth_token_response"]["refresh_token"]
+		if "re_expires_in" in transacObj["alipay_system_oauth_token_response"]:
+			transacObj["re_expires_in"] = transacObj["alipay_system_oauth_token_response"]["re_expires_in"]
+		if "code" in transacObj["alipay_system_oauth_token_response"]:
+			transacObj["code"] = transacObj["alipay_system_oauth_token_response"]["code"]
+		if "msg" in transacObj["alipay_system_oauth_token_response"]:
+			transacObj["msg"] = transacObj["alipay_system_oauth_token_response"]["msg"]
+		if "sub_code" in transacObj["alipay_system_oauth_token_response"]:
+			transacObj["sub_code"] = transacObj["alipay_system_oauth_token_response"]["sub_code"]
+		if "sub_msg" in transacObj["alipay_system_oauth_token_response"]:
+			transacObj["sub_msg"] = transacObj["alipay_system_oauth_token_response"]["sub_msg"]
+		if "sign" in transacObj:
+			transacObj["sign"] = transacObj["sign"]
+		if "user_id" in transacObj:
+			transacObj["result"] = True
+		else:
+			transacObj["result"] = False
+		return transacObj
+
 
 
 
