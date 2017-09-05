@@ -92,7 +92,7 @@ class AliService(BaseService):
 
 		return notifyObj
 
-	# todo: 验证签名
+	# 验证签名
 	# doc: https://docs.open.alipay.com/203/105286
 	def checkNotifyObj(self, configObj, notifyObj):
 		result = False;
