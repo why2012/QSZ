@@ -11,6 +11,8 @@ from AliPayment import *
 
 from Location import *
 
+from UtilConfig import *
+
 AES_KEY = "skitfn,.|1-AJ*2^"
 TOKEN_HEADER = "QSZ_TOKEN"
 TOKEN_EXPIRE = 3600 * 24 * 5

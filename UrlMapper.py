@@ -5,6 +5,7 @@ from controller.UserController import *
 from controller.HouseController import *
 from controller.FindHouseController import *
 from controller.InviterController import *
+from controller.OrderProcedure import *
 
 class UrlMapper(object):
 
@@ -30,8 +31,10 @@ class UrlMapper(object):
 
 			(r"/search_house", SearchHouseByName),# 搜索房源
 
-			(r"/invitation/getcode", GetInvitationCode), #获取邀请码
-			(r"/invitation/setcode", SetInvitationCode), #填写邀请码
+			(r"/invitation/getcode", GetInvitationCode), # 获取邀请码
+			(r"/invitation/setcode", SetInvitationCode), # 填写邀请码
+
+			(r"/order/create_preorder", CreatePreOrder), # 创建看房申请			
 		]	
 
 	def getMapper(self):

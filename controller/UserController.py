@@ -60,3 +60,28 @@ class UserRealNameIdentification(BaseController):
 		("self.realname", "self.idcardnumber", "self.idcardportrait", "self.idcardfront", "self.idcardback", 0, "self.userId"))
 	def execute(self):
 		self.setResult([self.realname, self.idcardnumber])
+
+# todo: 我的钱包
+class MyWallet(BaseController):
+	@checklogin()
+	def execute(self):
+		pass
+
+# todo: 我的订单
+class MyOrder(BaseController):
+	@checklogin()
+	def execute(self):
+		pass
+
+
+
+
+
+
+
+
+
+
+
+
+
