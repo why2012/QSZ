@@ -4,6 +4,7 @@ import tornado.ioloop as ioloop
 import tornado.web as web 
 import logging.config
 from UrlMapper import *
+from conf.Config import *
 import Setting
 import os
 import platform
@@ -21,7 +22,9 @@ class MakeApp(object):
 		if not os.path.exists(LOG_PATH):
 			os.makedirs(LOG_PATH)
 		logging.config.fileConfig("conf/Logging.conf")
-		return web.Application(self.urlMapper.getMapper(), **Setting.Conf)
+		webApplication = web.Application(self.urlMapper.getMapper(), **Setting.Conf)
+		UtilConfig["WebApplication"] = webApplication
+		return webApplication
 
 def initDatabase():
 	print "init database."

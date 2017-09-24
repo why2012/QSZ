@@ -6,3 +6,4 @@ from lib.SqlFilter import *
 from lib.InvokeFilter import *
 from lib.CheckParam import *
 from lib.CheckLocationFilter import *
+from lib.InnerHttpInvokeFilter import *

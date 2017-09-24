@@ -34,3 +34,15 @@ class SetInvitationCode(BaseController):
 		else:
 			raise Exception("不要重复填写邀请码", STATUS_PARAM_ERROR)
 		return {"my_invite_code": mycode, "friend_invite_code": self.invite_code}
+
+# todo: 促成的交易
+class RelevantOrder(BaseController):
+	@checklogin()
+	def execute(self):
+		pass
+
+# todo: 推广榜单
+class PromotionBillboard(BaseController):
+	@checklogin()
+	def execute(self):
+		pass

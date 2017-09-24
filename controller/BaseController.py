@@ -1,4 +1,5 @@
 # coding: utf-8
+from __future__ import division
 import tornado.web as web
 import json
 import logging
@@ -45,6 +46,7 @@ class BaseController(web.RequestHandler):
 	def invokeExecute(self, *args):
 		try:
 			jsonobj = self.execute(*args)
+			self.jsonobj = jsonobj
 		except LoginException, e:
 			self.setResult(status = e.getCode(), msg = e.getMsg())
 		except ErrorStatusException, e:
@@ -66,7 +68,7 @@ class BaseController(web.RequestHandler):
 				self.set_header('Content-Type', 'application/json')
 				self.jsonWrite(self.result)
 				self.logger.info(self.oneLine(str(self.getAllArgs())) + "; " + json.dumps(self.result, ensure_ascii = False))
-			if self.resultBody is not None:
+			if self.result is None and self.resultBody is not None:
 				self.rawTextWrite(self.resultBody)
 				self.logger.info(self.resultBody)
 

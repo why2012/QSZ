@@ -5,7 +5,7 @@ import hashlib
 def WxParamEncrypt(args, wxkey = ""):
 	noEmpty = {}
 	for key, value in args.items():
-		if type(value) != "str":
+		if not isinstance(value, str):
 			value = str(value)
 		if value != "" and value is not None:
 			noEmpty[key] = value
@@ -30,7 +30,7 @@ def AliParamEncrypt(args, secretKey = ""):
 
 	noEmpty = {}
 	for key, value in args.items():
-		if type(value) != "str":
+		if not isinstance(value, str):
 			value = str(value)
 		if value != "" and value is not None:
 			noEmpty[key] = value
@@ -58,7 +58,7 @@ def AliParamVerify(args, publicKey = ""):
 	paymentObj = {}
 	for key, value in args.items():
 		if key != "sign" and key != "sign_type":
-			if type(value) != "str":
+			if not isinstance(value, str):
 				value = str(value)
 			paymentObj[key] = unquote(value)
 
