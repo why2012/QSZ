@@ -14,6 +14,7 @@ def checklogin(enbale_check = True):
 					if TOKEN_NAME not in self.request.headers:
 						warnLoginOut(self)
 					token = self.request.headers[TOKEN_NAME]
+					token_str = token
 					aes = AES(AES_KEY)
 					token = aes.decrypt(token)
 					if token is not None and token.startswith(TOKEN_HEADER):
@@ -22,6 +23,7 @@ def checklogin(enbale_check = True):
 							warnLoginOut(self)
 						else:
 							self.userId = userId
+							self.token_original = token_str
 							_fresult = op(self, *args, **kwargs)
 							return _fresult
 					else:

@@ -35,6 +35,7 @@ class UrlMapper(object):
 			(r"/invitation/setcode", SetInvitationCode), # 填写邀请码
 
 			(r"/order/create_preorder", CreatePreOrder), # 创建看房申请			
+			(r"/order/get_preorder_paymenturl", GetPreOrderPaymentUrl), # 获取看房申请支付url
 		]	
 
 	def getMapper(self):

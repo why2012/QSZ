@@ -1,12 +1,18 @@
 # coding: utf-8
 import hashlib
+import json
+import sys
+reload(sys).setdefaultencoding('utf-8')  
 
 # key 密钥
 def WxParamEncrypt(args, wxkey = ""):
 	noEmpty = {}
 	for key, value in args.items():
 		if not isinstance(value, str):
-			value = str(value)
+			if isinstance(value, dict) or isinstance(value, tuple):
+				value = json.dumps(value, ensure_ascii = False)
+			else:
+				value = str(value)
 		if value != "" and value is not None:
 			noEmpty[key] = value
 	keys = noEmpty.keys()
@@ -27,11 +33,13 @@ def WxParamEncrypt(args, wxkey = ""):
 def AliParamEncrypt(args, secretKey = ""):
 	import rsa
 	import base64
-
 	noEmpty = {}
 	for key, value in args.items():
 		if not isinstance(value, str):
-			value = str(value)
+			if isinstance(value, dict) or isinstance(value, tuple):
+				value = json.dumps(value, ensure_ascii = False)
+			else:
+				value = str(value)
 		if value != "" and value is not None:
 			noEmpty[key] = value
 	keys = noEmpty.keys()
@@ -47,6 +55,8 @@ def AliParamEncrypt(args, secretKey = ""):
 	secretKey = "-----BEGIN RSA PRIVATE KEY-----\n" + secretKey + "\n-----END RSA PRIVATE KEY-----"
 	privkey = rsa.PrivateKey.load_pkcs1(secretKey)
 	sign = base64.b64encode(rsa.sign(argsString, privkey, "SHA-256"))
+	# print "--------------", argsString
+	# print "++++++++++++++", sign
 	return sign
 
 def AliParamVerify(args, publicKey = ""):

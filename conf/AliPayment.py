@@ -3,6 +3,7 @@
 AliPayment = {
 	"appid": "",
 	"secret_key": "",
+	# 应用公钥, 无作用
 	"public_key": "",
 	"format": "JSON",
 	"charset": "utf-8",
@@ -11,6 +12,7 @@ AliPayment = {
 	"app_auth_token_db_key": "ali_payment_app_authtoken",
 	"app_startup_auth_token": "",
 	"payment": { # 付款参数
+		# 支付宝公钥，验签用
 		"public_key": "",
 		"domain_url": "https://openapi.alipay.com/gateway.do",
 		"method": "alipay.trade.wap.pay",

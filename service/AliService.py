@@ -7,6 +7,7 @@ from util.encrypt import *
 import requests
 import time
 from model.AliModel import AliModel
+from urllib import urlencode
 
 class AliService(BaseService):
 	def __init__(self, db, cursor):
@@ -37,12 +38,7 @@ class AliService(BaseService):
 		return paymentObj
 
 	def getPaymentUrl(self, domain_url, paymentObj):
-		url_args = []
-		for key, value in paymentObj:
-			if type(value) != "str":
-				value = str(value)
-			url_args.append(key + "=" + value)
-		return domain_url + "?" + "&".join(url_args)
+		return domain_url + "?" + urlencode(paymentObj)
 
 	# --- 交易状态 ---
 	# WAIT_BUYER_PAY	交易创建，等待买家付款
@@ -148,7 +144,7 @@ class AliService(BaseService):
 			transacObj["sub_code"] = responseObj["alipay_fund_trans_toaccount_transfer_response"]["sub_code"]
 		if "sub_msg" in responseObj["alipay_fund_trans_toaccount_transfer_response"]:
 			transacObj["sub_msg"] = responseObj["alipay_fund_trans_toaccount_transfer_response"]["sub_msg"]
-		if transacObj["code"] != "10000"
+		if transacObj["code"] != "10000":
 			transacObj["result"] = False
 		else:
 			transacObj["result"] = True
@@ -170,14 +166,15 @@ class AliService(BaseService):
 	# 引导用户授权url, 获取auth_code
 	def getUserAuthUrl(self, authObj):
 		url_domain = authObj["domain_url"]
-		return url_domain + "?app_id=" + authObj["app_id"] + "&scope=" + authObj["scope"] + "&redirect_uri=" + authObj["redirect_uri"] + "&state=" + authObj["state"]
+		#return url_domain + "?app_id=" + authObj["app_id"] + "&scope=" + authObj["scope"] + "&redirect_uri=" + authObj["redirect_uri"] + "&state=" + authObj["state"]
+		return url_domain + "?" + urlencode({"app_id": authObj["app_id"], "scope": authObj["scope"], "redirect_uri": authObj["redirect_uri"], "state": authObj["state"]})
 
 	# https://docs.open.alipay.com/common/105193
 	def getAppAuthToken(self):
 		app_auth_token, is_expired, refresh_token, re_expire_in = self.aliModel.getAppToken()
 		if app_auth_token == 0:
 			app_auth_token = self.getAppAuthToken()
-		else if is_expired:
+		elif is_expired:
 			app_auth_token = self.refreshAppAuthToken(refresh_token)
 		return app_auth_token
 
