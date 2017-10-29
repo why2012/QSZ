@@ -1,9 +1,14 @@
 # coding: utf-8
+import lib.ConfigSecHelper as ConfigSecHelper
+
 DEV = True
+config_sec_path = ""
 if DEV:
 	from DevConfig import * 
+	config_sec_path = "dev_db_config"
 else:
 	from OnlineConfig import * 
+	config_sec_path = "online_db_config"
 
 from WxPayment import *
 
@@ -12,6 +17,8 @@ from AliPayment import *
 from Location import *
 
 from UtilConfig import *
+
+ConfigSecHelper.start_extract({"WxPayment": WxPayment, "AliPayment": AliPayment, config_sec_path: db_config})
 
 AES_KEY = "skitfn,.|1-AJ*2^"
 TOKEN_HEADER = "QSZ_TOKEN"

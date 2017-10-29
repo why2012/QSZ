@@ -11,6 +11,7 @@ AliPayment = {
 	"app_auth_token_db_key": "ali_payment_app_authtoken",
 	"app_startup_auth_token": "",
 	"payment": { # 付款参数
+		"public_key": "",
 		"domain_url": "https://openapi.alipay.com/gateway.do",
 		"method": "alipay.trade.wap.pay",
 		"notify_url": "",
