@@ -222,11 +222,12 @@ CREATE_TABLE_PRE_ORDER = """
 							owner_id INT UNSIGNED NOT NULL,
 							renter_id INT UNSIGNED NOT NULL,
 							house_id BIGINT UNSIGNED NOT NULL,
-							status TINYINT UNSIGNED COMMENT '1 租客提交, 2 支付完成, 3 完成看房, 4 投诉退款, 5 退款成功',
+							  TINYINT UNSIGNED COMMENT '1 租客提交, 2 支付完成, 3 完成看房, 4 投诉退款, 5 退款成功',
 							create_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 							update_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
 							PRIMARY KEY (id),
+							UNIQUE INDEX owner_renter_house(owner_id, renter_id, house_id)
 							CONSTRAINT pre_order_owner_user_info_fk FOREIGN KEY (owner_id) REFERENCES %s(id),
 							CONSTRAINT pre_order_renter_user_info_fk FOREIGN KEY (renter_id) REFERENCES %s(id),
 							CONSTRAINT pre_order_house_house_info_fk FOREIGN KEY (house_id) REFERENCES %s(id)

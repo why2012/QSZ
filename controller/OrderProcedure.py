@@ -6,16 +6,23 @@ import datetime
 
 # 创建看房申请
 class CreatePreOrder(BaseController):
-	#@checklogin()
-	@innerhttp("TestController", {"A": 1, "B": [2]})
+	@checklogin()
+	@queryparam("owner_id", "string")
+	@queryparam("house_id", "string")
+	@invoke("if self.owner_id == self.userId: raise Exception('看房人与房东不能是同一人.')")
+	@sql("insert ignore into pre_order_info(owner_id, renter_id, house_id, status) values(%s, %s, %s, %s)", ("self.owner_id", "self.userId", "self.house_id", "1"))
 	def execute(self):
-		return self.controller_bucket["TestController"].jsonobj
+		if self.lastid == 0:
+			self.lastid = self.sqlServ.SQL("select-one id from pre_order_info where owner_id=%s and renter_id=%s and house_id=%s", (self.owner_id, self.userId, self.house_id))["id"]
+		return self.setResult(self.lastid, msg="OK")
 
-# 获取支付url
+# 获取看房申请支付url
 class GetPreOrderPaymentUrl(BaseController):
 	@checklogin()
+	@queryparam("pre_order_id", "string")
+	@innerhttp("PaymentController.AliPaymentUrlController", {"out_trade_no": "self.pre_order_id", "total_fee": 10, "body_desc": "pre order fee", "subject_title": "信息费"}, headers = {TOKEN_NAME: "self.token_original"})
 	def execute(self):
-		pass
+		return self.controller_bucket["AliPaymentUrlController"].jsonobj
 
 # 看房红包支付结果
 class PreOrderPaymentResult(BaseController):

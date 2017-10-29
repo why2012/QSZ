@@ -4,11 +4,13 @@ import tornado.ioloop as ioloop
 import tornado.web as web 
 import logging.config
 from UrlMapper import *
-from conf.Config import *
+#from conf.Config import *
 import Setting
 import os
 import platform
 import argparse
+#import warnings
+#warnings.filterwarnings("ignore")
 
 class MakeApp(object):
 

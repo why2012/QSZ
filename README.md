@@ -324,3 +324,47 @@ openid
   "ans": {}
 }
 ```
+
+### 创建看房申请
+地址: /order/create_preorder
+
+方法: post
+
+参数
+```
+owner_id: 房东id
+house_id: 房屋id
+```
+
+返回
+```
+
+{
+  "status": 0,
+  "msg": "OK",
+  "ans": 7 # pre_order_id
+}
+```
+
+### 获取看房申请支付url
+地址: /order/get_preorder_paymenturl
+
+方法: post
+
+参数
+```
+pre_order_id: 看房申请id
+```
+
+返回
+```
+
+{
+    "status": 0,
+    "msg": "",
+    "ans": {
+        "result": "SUCCESS",
+        "payment_url": "https://openapi.alipay.com/gateway.do?format=JSON&timestamp=2017-10-29+19%3A32%3A29&charset=utf-8&app_id=2017081508207837&biz_content=%7B%22body%22%3A+%22pre+order+fee%22%2C+%22out_trade_no%22%3A+%227%22%2C+%22product_code%22%3A+%22QUICK_WAP_WAY%22%2C+%22total_amount%22%3A+10.0%2C+%22subject%22%3A+%22%E4%BF%A1%E6%81%AF%E8%B4%B9%22%7D&sign=y%2BNHVnVL6iIb8rnK%2BM1RhK34Dwka08RGXbYXHp0tlWHWaEojpgX7soJo04tX0Jt%2BRb2oiEjw6KJAjQ48Xb2vy42F1%2FzwT1IHNIhtNBFl3xfl6twMtuDsV0PQ1TABgZXWVLaRzF79PNWeNbkDAxPEOcHD5EodEWzwmCLVLhmYyjc37cbESemBqH9pnif9V30F6BZleMGFNo53q%2BmjQMGvWoXDkrNth1HgEg0RJ3i0%2BGEQKLy83JRmhtUf9mEpWTC8OEh8ZRW306TGvhuHQT7iOo2QEOz36lFW20j2szaM%2Fymvg9YJEaPlx6q%2BwjhA7y72FJB%2B3MgglyrvoOHzBqYqGg%3D%3D&version=1.0&notify_url=&sign_type=RSA2&method=alipay.trade.wap.pay&return_url="
+    }
+}
+```

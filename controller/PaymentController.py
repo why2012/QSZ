@@ -48,14 +48,18 @@ class WxSendRedpack(BaseController):
 class AliPaymentUrlController(BaseController):
 	@checklogin()
 	@service("AliService", "aliService")
+	@queryparam("out_trade_no", "string")
+	@queryparam("total_fee", "float")
+	@queryparam("body_desc", "string")
+	@queryparam("subject_title", "string")
 	def execute(self):
-		out_trade_no = "" # 订单号
-		total_fee = 0 # 金额
-		body_desc = "" # 描述
-		subject_title = "" # 标题 
+		out_trade_no = self.out_trade_no # 订单号
+		total_fee = self.total_fee # 金额
+		body_desc = self.body_desc # 描述
+		subject_title = self.subject_title # 标题 
 		paymentObj = self.aliService.constructPaymentObj(AliPayment, body_desc, subject_title, out_trade_no, total_fee)
 		payment_url = self.aliService.getPaymentUrl(AliPayment["payment"]["domain_url"], paymentObj)
-		return {result: "SUCCESS", "payment_url": payment_url} #
+		return {"result": "SUCCESS", "payment_url": payment_url} #
 
 # 支付宝回调接口
 class AliPaymentNotifyController(BaseController):
