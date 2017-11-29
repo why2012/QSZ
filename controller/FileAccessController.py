@@ -7,6 +7,6 @@ class FileAccessController(BaseController):
 			raise Exception("Illegal path.")
 		with open(filepath) as file:
 			rawData = file.read()
-			self.set_header('Content-Type', 'image/jpeg')
+			self.set_header('Content-Type', 'application/octet-stream')
 			self.write(rawData)
 			self.flush()
