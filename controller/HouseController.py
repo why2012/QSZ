@@ -1,6 +1,6 @@
 # coding: utf-8
 from controller.BaseController import *
-import dependency.qcloud_video as qcloud
+#import dependency.qcloud_video as qcloud
 import uuid
 import time
 import datetime
