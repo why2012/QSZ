@@ -7,6 +7,13 @@ class FileAccessController(BaseController):
 			raise Exception("Illegal path.")
 		with open(filepath) as file:
 			rawData = file.read()
-			self.set_header('Content-Type', 'application/octet-stream')
+			if filepath.endswith("html") or filepath.endswith("htm"):
+				self.set_header('Content-Type', 'text/html')
+			elif filepath.endswith("css"):
+				self.set_header('Content-Type', 'text/css')
+			elif filepath.endswith("js"):
+				self.set_header('Content-Type', 'application/x-javascript')
+			else:
+				self.set_header('Content-Type', 'image/jpeg')
 			self.write(rawData)
 			self.flush()
