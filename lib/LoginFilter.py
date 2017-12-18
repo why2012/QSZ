@@ -1,4 +1,7 @@
 # coding: utf-8
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import print_function
 from conf.Config import *
 from util.Exceptions import *
 from util.ErrorCode import *
@@ -28,8 +31,8 @@ def checklogin(enbale_check = True):
 							return _fresult
 					else:
 						warnLoginOut(self)
-				except Exception, e:
-					print traceback.format_exc()
+				except Exception as e:
+					print(traceback.format_exc())
 					raise e
 			else:
 				_fresult = op(self, *args, **kwargs)

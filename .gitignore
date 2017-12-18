@@ -11,3 +11,8 @@ nohup.out
 *.read
 /data
 /secret-data/
+build/
+dist/
+__pycache__/
+MANIFEST
+HTML/

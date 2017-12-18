@@ -1,4 +1,7 @@
 # coding: utf-8
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import print_function
 import tornado.httpserver as httpserver
 import tornado.ioloop as ioloop
 import tornado.web as web 
@@ -29,10 +32,10 @@ class MakeApp(object):
 		return webApplication
 
 def initDatabase():
-	print "init database."
+	print("init database.")
 	from util.InitializeDatabase import initDB
 	initDB()
-	print "done."
+	print("done.")
 
 def startupServer():
 	app = MakeApp().make()
