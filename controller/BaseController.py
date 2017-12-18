@@ -1,5 +1,7 @@
 # coding: utf-8
 from __future__ import division
+from __future__ import absolute_import
+from __future__ import print_function
 import tornado.web as web
 import json
 import logging
@@ -30,8 +32,8 @@ class BaseController(web.RequestHandler):
 			self.version = platform.python_version_tuple()
 		
 			self.DBSetup()
-		except Exception, e:
-			print e
+		except Exception as e:
+			print(e)
 
 	def DBSetup(self):
 		self.db = mysql.connect(host = db_config["host"], user = db_config["user"], passwd = db_config["pwd"], db = db_config["db"], port = int(db_config["port"]), charset = db_config["charset"], use_unicode = True)
@@ -47,12 +49,12 @@ class BaseController(web.RequestHandler):
 		try:
 			jsonobj = self.execute(*args)
 			self.jsonobj = jsonobj
-		except LoginException, e:
+		except LoginException as e:
 			self.setResult(status = e.getCode(), msg = e.getMsg())
-		except ErrorStatusException, e:
+		except ErrorStatusException as e:
 			self.setResult(status = e.getCode(), msg = e.getMsg())
 			self.loggerWaning.warn(self.oneLine(str(self.getAllArgs()) + "; " + e.getMsg() + "\n" + traceback.format_exc()))
-		except Exception, e:
+		except Exception as e:
 			if len(e.args) == 2 and isinstance(e.args[1], int):
 				self.setResult(status = e.args[1], msg = str(e.args[0]))
 			else:
