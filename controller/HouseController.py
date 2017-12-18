@@ -70,7 +70,7 @@ class CreateHousePhoto(BaseController):
 	@userfile("house_photo", "house_photo", uniqueidname = "uuid")
 	@sql("insert into house_photo(house_id, user_id, photo_url) values(%s, %s, %s)", ("self.house_id", "self.userId", "self.house_photo"))
 	def execute(self):
-		print self.uuid
+		print(self.uuid)
 		self.setResult({"id": self.lastid, "url": self.house_photo})
 
 # 修改房源照片，一次一张

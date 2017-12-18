@@ -4,19 +4,19 @@ import lib.ConfigSecHelper as ConfigSecHelper
 DEV = True
 config_sec_path = ""
 if DEV:
-	from DevConfig import * 
+	from .DevConfig import * 
 	config_sec_path = "dev_db_config"
 else:
-	from OnlineConfig import * 
+	from .OnlineConfig import * 
 	config_sec_path = "online_db_config"
 
-from WxPayment import *
+from .WxPayment import *
 
-from AliPayment import *
+from .AliPayment import *
 
-from Location import *
+from .Location import *
 
-from UtilConfig import *
+from .UtilConfig import *
 
 ConfigSecHelper.start_extract({"WxPayment": WxPayment, "AliPayment": AliPayment, config_sec_path: db_config})
 
