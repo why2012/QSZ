@@ -14,7 +14,7 @@ class SearchHouseByName(BaseController):
 	@queryparam("house_source", ptype = "int", optional = True)#来源，1 房东, 2 二房东, 3 中介
 	@queryparam("house_size", ptype = "string", optional = True)#面积,[20, 50] [,100] [100,]
 	@queryparam("house_direction", ptype = "string", optional = True)#朝向
-	@queryparam("house_decoration", ptype = "string", optional = True)#朝向
+	@queryparam("house_decoration", ptype = "string", optional = True)#装修情况
 	@queryparam("radius", ptype = "int", optional = True, default = 10)#筛选距离半径, km
 	@queryparam("shift", ptype = "int", optional = True, default = 0)#筛选偏移
 	@queryparam("count", ptype = "int", optional = True, default = 1000)#筛选数目

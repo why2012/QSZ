@@ -14,10 +14,11 @@ def setup_package():
     import sys
     deps = [
             'numpy',
-            'MySQL-python',
+            'mysqlclient',
             'tornado',
             'requests',
-            'pycrypto'
+            'pycrypto',
+            'rsa'
         ]
 
     extra_setuptools_args = dict(

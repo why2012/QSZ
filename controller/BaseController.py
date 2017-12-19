@@ -6,6 +6,7 @@ import tornado.web as web
 import json
 import logging
 import traceback
+import sys
 from util.ErrorCode import *
 from lib.LoggerFilters import *
 from conf.Config import *
@@ -30,6 +31,11 @@ class BaseController(web.RequestHandler):
 			self.result = None
 
 			self.version = platform.python_version_tuple()
+
+			if sys.version_info[0] < 3:
+				self.PY2 = True
+			else:
+				self.PY2 = False
 		
 			self.DBSetup()
 		except Exception as e:

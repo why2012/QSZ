@@ -16,7 +16,7 @@ class UserInfoCreate(BaseController):
 	# 用户类型, 1 房东, 2 二房东, 3 中介
 	@queryparam("user_type", "string")
 	# 介绍
-	@queryparam("self_description", "string")
+	@queryparam("self_description", "string", optional = True)
 	# 头像
 	@userfile("portrait", "portrait")
 	@sql("update user_info set nickname=%s, wx_sex=%s, user_type=%s, self_description=%s, wx_headimgurl = %s where id=%s",
