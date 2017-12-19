@@ -59,8 +59,9 @@ def innerhttp(_conrtollername, queryparams, postparams = {}, headers = {}, contr
 			httpcontr.invokeExecute()
 			bucket[conrtollername] = httpcontr
 
-			_fresult = op(self, *args, **kwargs)
-			return _fresult
+			if op is not None:
+				_fresult = op(self, *args, **kwargs)
+				return _fresult
 		return get_param
 	return method_process
 

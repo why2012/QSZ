@@ -23,8 +23,8 @@ class CreatePreOrder(BaseController):
 class GetPreOrderPaymentUrl(BaseController):
 	@checklogin()
 	@queryparam("pre_order_id", "string")
-	@innerhttp("PaymentController.AliPaymentUrlController", {"out_trade_no": "self.pre_order_id", "total_fee": 10, "body_desc": "pre order fee", "subject_title": "信息费"}, headers = {TOKEN_NAME: "self.token_original"})
 	def execute(self):
+		innerhttp("PaymentController.AliPaymentUrlController", {"out_trade_no": "self.pre_order_id", "total_fee": 10, "body_desc": "pre order fee", "subject_title": "信息费"}, headers = {TOKEN_NAME: "self.token_original"})(None)(self)
 		return self.controller_bucket["AliPaymentUrlController"].jsonobj
 
 # 看房红包支付结果

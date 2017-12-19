@@ -51,8 +51,12 @@ def userfile(filename, newfilename, useridname = "userId", basepath = "data/user
 			if os.path.exists(newfilepath):
 				raise ErrorStatusException("file %s already exists" % upfilename, STATUS_FILE_EXISTS)
 		filebody = self.processUpFile(filename)
-		with open(newfilepath, "w") as ufile:
-			ufile.write(filebody)
+		if self.PY2:
+			with open(newfilepath, "w") as ufile:
+				ufile.write(filebody)
+		else:
+			with open(newfilepath, "wb") as ufile:
+				ufile.write(filebody)
 		if newfilename is not None:	
 			setattr(self, newfilename, newfilepath) 
 	return method_process

@@ -1,6 +1,11 @@
 # coding: utf-8
 from service.BaseService import *
 from model.GenericModel import GenericModel
+import sys
+if sys.version_info[0] < 3:
+	PY2 = True
+else:
+	PY2 = False
 
 class GenericSqlService(BaseService):
 	def __init__(self, db, cursor, targetObj):
@@ -16,7 +21,10 @@ class GenericSqlService(BaseService):
 		self.reinit()
 		sqlString = self.preProcess(sqlString)
 		sqlTokenList = sqlString.strip().replace('\n', ' ').replace('\t', ' ').split(" ")
-		sqlTokenList = filter(lambda t: t.strip() != "", sqlTokenList)
+		if PY2:
+			sqlTokenList = filter(lambda t: t.strip() != "", sqlTokenList)
+		else:
+			sqlTokenList = list(filter(lambda t: t.strip() != "", sqlTokenList))
 		originalSqlTokenList = sqlTokenList
 		sqlTokenList = map(lambda t: t.upper(), sqlTokenList)
 		sqlTokenList, originalSqlTokenList = self.preProcessTokenList(sqlTokenList, originalSqlTokenList)

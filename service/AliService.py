@@ -7,7 +7,11 @@ from util.encrypt import *
 import requests
 import time
 from model.AliModel import AliModel
-from urllib import urlencode
+import sys
+if sys.version_info[0] < 3:
+	from urllib import urlencode
+else:
+	from urllib.parse import urlencode 
 
 class AliService(BaseService):
 	def __init__(self, db, cursor):

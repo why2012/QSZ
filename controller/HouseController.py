@@ -90,7 +90,7 @@ class UpdateHousePhoto(BaseController):
 	def execute(self):
 		self.setResult({"url": self.house_photo})
 
-# todo: 修改房源视频
+# todo: 房源视频添加
 class CreateHouseVideo(BaseController):
 	@checklogin()
 	@queryparam("house_id")
@@ -99,7 +99,7 @@ class CreateHouseVideo(BaseController):
 	def execute(self):
 		self.setResult({"id": self.lastid, "url": self.house_video})
 
-# todo: 添加房源视频
+# todo: 修改房源视频
 class UpdateHouseVideo(BaseController):
 	@checklogin()
 	@queryparam("video_id")
@@ -179,7 +179,7 @@ class HouseCreate(BaseController):
 	# 房屋设施
 	# 1 空调, 2 暖气, 3 洗衣机, 4 冰箱, 5 允许宠物, 6 电视, 7 浴缸, 8 热水淋浴, 9 门禁系统, 10 有线网络, 11 电梯, 12 无线网络, 13 停车位, 14 饮水机
 	# 1|2|3
-	@queryparam("facility", "string", optional = True, default = 0)
+	@queryparam("facility", "string", optional = True, default = "")
 	@sql(""" 
 		insert ignore into house_info(user_id, province_name, province_code, city_name, city_code, county_name, county_code, district_name, district_code,
 		house_number, longitude, latitude, rent_time_type, rent_room_type, house_size, house_type, house_floor, house_direction, house_decoration, 

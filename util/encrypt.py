@@ -2,7 +2,11 @@
 import hashlib
 import json
 import sys
-reload(sys).setdefaultencoding('utf-8')  
+if sys.version_info[0] < 3:
+	reload(sys).setdefaultencoding('utf-8')  
+	PY2 = True
+else:
+	PY2 = False
 
 # key 密钥
 def WxParamEncrypt(args, wxkey = ""):
@@ -42,7 +46,10 @@ def AliParamEncrypt(args, secretKey = ""):
 				value = str(value)
 		if value != "" and value is not None:
 			noEmpty[key] = value
-	keys = noEmpty.keys()
+	if PY2:
+		keys = noEmpty.keys()
+	else:
+		keys = list(noEmpty.keys())
 	keys.sort()
 	argsString = ""
 	args = []
@@ -54,7 +61,10 @@ def AliParamEncrypt(args, secretKey = ""):
 	# print argsString
 	secretKey = "-----BEGIN RSA PRIVATE KEY-----\n" + secretKey + "\n-----END RSA PRIVATE KEY-----"
 	privkey = rsa.PrivateKey.load_pkcs1(secretKey)
-	sign = base64.b64encode(rsa.sign(argsString, privkey, "SHA-256"))
+	if PY2:
+		sign = base64.b64encode(rsa.sign(argsString, privkey, "SHA-256"))
+	else:
+		sign = base64.b64encode(rsa.sign(argsString.encode("utf-8"), privkey, "SHA-256"))
 	# print "--------------", argsString
 	# print "++++++++++++++", sign
 	return sign
@@ -76,7 +86,10 @@ def AliParamVerify(args, publicKey = ""):
 	for key, value in paymentObj.items():
 		if value != "" and value is not None:
 			noEmpty[key] = value
-	keys = noEmpty.keys()
+	if PY2:
+		keys = noEmpty.keys()
+	else:
+		keys = list(noEmpty.keys())
 	keys.sort()
 	argsString = ""
 	args = []

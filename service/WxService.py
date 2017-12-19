@@ -1,7 +1,11 @@
 # coding: utf-8
 from service.BaseService import *
 from model.WxModel import WxModel
-import urllib2 as url
+import sys
+if sys.version_info[0] < 3:
+	import urllib2 as url
+else:
+	import urllib.request as url
 import json
 import xml.dom.minidom as xmldom
 import uuid
@@ -27,7 +31,7 @@ class WxService(BaseService):
 	# appid, 商户id, 商户订单号, 终端IP , 商户平台密钥key, 支付结果通知地址, 交易类型, 商品描述	
 	def constructPrepayObj(self, appid, mch_id, out_trade_no, spbill_create_ip, wxkey, notify_url, trade_type = "JSAPI", body = "付款"):
 		# 随机字符串, <= 32
- 		nonce_str = str(uuid.uuid1())[0:14] + str(uuid.uuid1())[19:]
+		nonce_str = str(uuid.uuid1())[0:14] + str(uuid.uuid1())[19:]
 		# 可选
 		device_info = ""
 		sign_type = "MD5"
@@ -57,7 +61,7 @@ class WxService(BaseService):
 	# 发送红包参数, appid, 商户id, 商户订单号, 用户openid, 公众账号appid, 商户名称, 付款金额, 红包发放总人数, 场景id, 红包祝福语, Ip地址, 活动名称, 备注
 	def constructRedpackObj(self, appid, mch_id, mch_billno, re_openid, wxappid, send_name, total_amount, total_num = 1, scene_id = "PRODUCT_5", wishing = "收款", client_ip = "192.168.0.1", act_name = "", remark = ""):
 		# 随机字符串, <= 32
- 		nonce_str = str(uuid.uuid1())[0:14] + str(uuid.uuid1())[19:]
+		nonce_str = str(uuid.uuid1())[0:14] + str(uuid.uuid1())[19:]
 		# 参数
 		argsDict = {}
 		argsDict["appid"] = appid
