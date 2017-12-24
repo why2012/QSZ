@@ -88,9 +88,9 @@ class AliPaymentNotifyDelegate(BaseDelegate):
 	def delegate(self):
 		processor = None
 		if self.op == PAYMENT_GLOBAL_CONFIG["PRE_ORDER_PAYMENT"]:
-			from .OrderProcedure import PreOrderProcessor
+			from .OrderProcedureController import PreOrderProcessor
 			processor = PreOrderProcessor(self.notifyObj["out_trade_no"], self.db)
-			
+
 		if processor is not None:
 			result_bool = processor.process()
 			return result_bool
