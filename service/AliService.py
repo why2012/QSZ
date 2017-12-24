@@ -17,17 +17,29 @@ class AliService(BaseService):
 	def __init__(self, db, cursor):
 		self.aliModel = AliModel(db, cursor)
 
-	def constructPaymentObj(self, configObj, bodyDesc, subjectTitle, out_trade_no, total_amount_fee):
+	def constructPaymentObj(self, configObj, bodyDesc, subjectTitle, out_trade_no, total_amount_fee, return_url = None, notify_url = None):
 		paymentObj = {}
 		paymentObj["app_id"] = configObj["appid"]
 		paymentObj["method"] = configObj["payment"]["method"]
 		paymentObj["format"] = configObj["format"]
-		paymentObj["return_url"] = configObj["payment"]["return_url"]
+		if return_url is None:
+			paymentObj["return_url"] = configObj["payment"]["return_url"]
+		else:
+			if return_url.strip().startswith("http"):
+				paymentObj["return_url"] = return_url
+			else:
+				paymentObj["return_url"] = configObj["return_url_domain"] + return_url
 		paymentObj["charset"] = configObj["charset"]
 		paymentObj["sign_type"] = configObj["sign_type"]
 		paymentObj["timestamp"] = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 		paymentObj["version"] = configObj["version"]
-		paymentObj["notify_url"] = configObj["payment"]["notify_url"]
+		if notify_url is None:
+			paymentObj["notify_url"] = configObj["payment"]["notify_url"]
+		else:
+			if notify_url.strip().startswith("http"):
+				paymentObj["notify_url"] = notify_url
+			else:
+				paymentObj["notify_url"] = configObj["notify_url_domain"] + notify_url
 		# 请求参数
 		biz_content_obj = {
 			"body": bodyDesc, 

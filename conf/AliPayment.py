@@ -11,6 +11,8 @@ AliPayment = {
 	"version": "1.0",
 	"app_auth_token_db_key": "ali_payment_app_authtoken",
 	"app_startup_auth_token": "",
+	"notify_url_domain": "",
+	"return_url_domain": "",
 	"payment": { # 付款参数
 		# 支付宝公钥，验签用
 		"public_key": "",

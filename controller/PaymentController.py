@@ -55,27 +55,32 @@ class AliPaymentUrlController(BaseController):
 	@queryparam("total_fee", "float")
 	@queryparam("body_desc", "string")
 	@queryparam("subject_title", "string")
+	@queryparam("notify_url", "string")
+	@queryparam("return_url", "string")
 	def execute(self):
 		out_trade_no = self.out_trade_no # 订单号
 		total_fee = self.total_fee # 金额
 		body_desc = self.body_desc # 描述
 		subject_title = self.subject_title # 标题 
-		paymentObj = self.aliService.constructPaymentObj(AliPayment, body_desc, subject_title, out_trade_no, total_fee)
+		paymentObj = self.aliService.constructPaymentObj(AliPayment, body_desc, subject_title, out_trade_no, total_fee, return_url = self.return_url, notify_url = self.notify_url)
 		payment_url = self.aliService.getPaymentUrl(AliPayment["payment"]["domain_url"], paymentObj)
 		return {"result": "SUCCESS", "payment_url": payment_url} #
 
 # 支付宝回调接口
 class AliPaymentNotifyController(BaseController):
 	@service("AliService", "aliService")
-	def execute(self):
+	def execute(self, op):
+		print("OP: " + op)
 		notifyObj = self.aliService.constructNotifyObj(self)
+		print(notifyObj)
 		# sign 验签
 		checkResult = self.aliService.checkNotifyObj(notifyObj, AliPayment)
 		if checkResult:
 			# todo: 业务处理
-
+			print("verify OK.")
 			self.resultBody = "success"
 		else:
+			print("verify Fail.")
 			self.resultBody = "[failed]sign check failed."
 
 # 支付宝，获取引导用户授权url

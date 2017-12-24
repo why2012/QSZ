@@ -20,6 +20,11 @@ from .UtilConfig import *
 
 ConfigSecHelper.start_extract({"WxPayment": WxPayment, "AliPayment": AliPayment, config_sec_path: db_config})
 
+PAYMENT_GLOBAL_CONFIG = {
+	"NOTIFY_MID_PATH": "/payment/ali/nontify/",
+	"PRE_ORDER_PAYMENT": "pre_order_payment",
+}
+
 AES_KEY = "skitfn,.|1-AJ*2^"
 TOKEN_HEADER = "QSZ_TOKEN"
 TOKEN_EXPIRE = 3600 * 24 * 5
