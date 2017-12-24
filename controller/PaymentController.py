@@ -72,9 +72,10 @@ class AliPaymentNotifyController(BaseController):
 	def execute(self, op):
 		print("OP: " + op)
 		notifyObj = self.aliService.constructNotifyObj(self)
-		print(notifyObj)
+		notifyMap = self.aliService.constructGlobalNotifyMap(self)
+		print(notifyMap)
 		# sign 验签
-		checkResult = self.aliService.checkNotifyObj(notifyObj, AliPayment)
+		checkResult = self.aliService.checkNotifyObj(AliPayment, notifyMap)
 		if checkResult:
 			# todo: 业务处理
 			print("verify OK.")

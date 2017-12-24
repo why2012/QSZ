@@ -10,8 +10,10 @@ from model.AliModel import AliModel
 import sys
 if sys.version_info[0] < 3:
 	from urllib import urlencode
+	from urllib import unquote
 else:
 	from urllib.parse import urlencode 
+	from urllib.parse import unquote 
 
 class AliService(BaseService):
 	def __init__(self, db, cursor):
@@ -104,14 +106,30 @@ class AliService(BaseService):
 
 		return notifyObj
 
+	# 所有回调参数，用于验参
+	def constructGlobalNotifyMap(self, baseController):
+		notifyMap = baseController.getAllArgs()
+		for key, value in notifyMap.items():
+			if key not in ["sign", "sign_type"]:
+				notifyMap[key] = unquote(value)
+		return notifyMap
+
 	# 验证签名
 	# doc: https://docs.open.alipay.com/203/105286
-	def checkNotifyObj(self, configObj, notifyObj):
+	def checkNotifyObj(self, configObj, notifyMap):
 		result = False;
 		try:
-			result = AliParamVerify(notifyObj, configObj["public_key"], configObj["secret_key"])
-		except:
-			pass
+			if notifyMap["seller_id"] != configObj["sellerid"]:
+				return False
+			if notifyMap["app_id"] != configObj["appid"]:
+				return False 
+			result = AliParamVerify(notifyMap, configObj["payment"]["public_key"])
+		except e:
+			import rsa
+			if isinstance(e, rsa.VerificationError):
+				pass
+			else:
+				raise e
 		finally:
 			return result
 

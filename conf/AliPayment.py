@@ -2,6 +2,7 @@
 
 AliPayment = {
 	"appid": "",
+	"sellerid": "",
 	"secret_key": "",
 	# 应用公钥, 无作用
 	"public_key": "",
