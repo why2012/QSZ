@@ -265,6 +265,7 @@ class AliService(BaseService):
 		requestObj["sign"] = AliParamEncrypt(requestObj, configObj["secret_key"])
 		url = url_domain + "?" + urlencode(requestObj)
 		print("-----fetchUserInfo-----", url)
+		# 目前的服务器无法直接访问这个https链接，需要设置verify=False, 有待调查解决
 		response = requests.get(url, verify = False)
 		responseObj = response.json()
 		transacObj = {}

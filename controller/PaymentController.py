@@ -181,6 +181,7 @@ class AliFetchUserInfoController(BaseController):
 				self.loggerError.error("aliuserauth verify failed | " + str(userInfo["result"]) + " | " + state + " | " + userInfo["state"])
 		else:
 			self.loggerError.error("aliuserauth verify failed | " + str(userInfo["result"]) + " | " + json.dumps(userInfo, ensure_ascii = False))
+			self.setResult("aliuserauth verify failed", INTERNAL_ERROR, userInfo)
 
 # 支付宝，获取用户芝麻分
 class AliFetchUserZhimaInfoController(BaseController):
