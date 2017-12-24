@@ -5,7 +5,7 @@ from controller.UserController import *
 from controller.HouseController import *
 from controller.FindHouseController import *
 from controller.InviterController import *
-from controller.OrderProcedure import *
+from controller.OrderProcedureController import *
 from controller.PaymentController import AliPaymentNotifyController
 
 class UrlMapper(object):
@@ -38,8 +38,8 @@ class UrlMapper(object):
 			(r"/payment/ali/nontify/(.*)", AliPaymentNotifyController), # 支付回调接口
 			(r"/payment/ali/nontify/userauth", AliPaymentNotifyController), # 用户授权回调接口
 
-			(r"/order/create_preorder", CreatePreOrder), # 创建看房申请			
-			(r"/order/get_preorder_paymenturl", GetPreOrderPaymentUrl), # 获取看房申请支付url
+			(r"/order/create_preorder", CreatePreOrderController), # 创建看房申请			
+			(r"/order/get_preorder_paymenturl", GetPreOrderPaymentUrlController), # 获取看房申请支付url
 		]	
 
 	def getMapper(self):

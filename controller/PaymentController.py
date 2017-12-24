@@ -130,7 +130,7 @@ class AliPaymentNotifyController(BaseController):
 			self.resultBody = "[failed]sign check failed."
 
 # 支付宝，获取引导用户授权url
-class AliUserInfoAuthUrl(BaseController):
+class AliUserInfoAuthUrlController(BaseController):
 	@checklogin()
 	@service("AliService", "aliService")
 	def execute(self):
@@ -139,7 +139,7 @@ class AliUserInfoAuthUrl(BaseController):
 		return {result: "SUCCESS", "payment_url": userauth_url}
 
 # 支付宝, 回调，获取auth token后, 获取用户信息
-class AliFetchUserInfo(BaseController):
+class AliFetchUserInfoController(BaseController):
 	@checklogin()
 	@service("AliService", "aliService")
 	def execute(self):
@@ -152,7 +152,7 @@ class AliFetchUserInfo(BaseController):
 			pass
 
 # 支付宝，企业转账
-class AliEnterpriseTransfer(BaseController):
+class AliEnterpriseTransferController(BaseController):
 	@checklogin()
 	@service("AliService", "aliService")
 	def execute(self):
@@ -176,7 +176,7 @@ class AliEnterpriseTransfer(BaseController):
 # 开发者获取支付宝应用的auth_code和auth_token， 回调
 # https://docs.open.alipay.com/common/105193
 # 调用url https://openauth.alipay.com/oauth2/appToAppAuth.htm?app_id=2015101400446982&redirect_uri=http%3A%2F%2Fexample.com
-class AliGetAuthCode(BaseController):
+class AliGetAuthCodeController(BaseController):
 	@service("AliService", "aliService")
 	def execute(self):
 		import requests

@@ -10,7 +10,7 @@ import abc
 import six
 
 # 创建看房申请
-class CreatePreOrder(BaseController):
+class CreatePreOrderController(BaseController):
 	@checklogin()
 	@queryparam("owner_id", "string")
 	@queryparam("house_id", "string")
@@ -22,7 +22,7 @@ class CreatePreOrder(BaseController):
 		return self.setResult(self.lastid, msg="OK")
 
 # 获取看房申请支付url
-class GetPreOrderPaymentUrl(BaseController):
+class GetPreOrderPaymentUrlController(BaseController):
 	@checklogin()
 	@queryparam("pre_order_id", "string")
 	def execute(self):
@@ -52,53 +52,53 @@ class PreOrderProcessor(BaseProcessor):
 		return True
 
 # 看房红包支付结果
-class PreOrderPaymentResult(BaseController):
+class PreOrderPaymentResultController(BaseController):
 	def execute(self):
 		pass
 
 # 创建租房订单
-class CreateHouseRentingOrder(BaseController):
+class CreateHouseRentingOrderController(BaseController):
 	@checklogin()
 	def execute(self):
 		pass
 
 # 确认订单信息
-class OwnerConfirmRentingOrderInfo(BaseController):
+class OwnerConfirmRentingOrderInfoController(BaseController):
 	@checklogin()
 	def execute(self):
 		pass
 
 # 房东确认订单
-class OwnerConfirmRentingOrder(BaseController):
+class OwnerConfirmRentingOrderController(BaseController):
 	@checklogin()
 	def execute(self):
 		pass
 
 # 获取待支付订单信息
-class GetRentingOrderPaymentInfo(BaseController):
+class GetRentingOrderPaymentInfoController(BaseController):
 	@checklogin()
 	def execute(self):
 		pass
 
 # 获取订单支付url
-class GetRentingOrderPaymentUrl(BaseController):
+class GetRentingOrderPaymentUrlController(BaseController):
 	@checklogin()
 	def execute(self):
 		pass
 
 # 租房订单支付结果
-class RentingOrderPaymentResult(BaseController):
+class RentingOrderPaymentResultController(BaseController):
 	def execute(self):
 		pass
 
 # 投诉订单
-class ComplaintAndRefund(BaseController):
+class ComplaintAndRefundController(BaseController):
 	@checklogin()
 	def execute(self):
 		pass
 
 # 投诉结果
-class ComplaintAndRefundResult(BaseController):
+class ComplaintAndRefundResultController(BaseController):
 	@checklogin()
 	def execute(self):
 		pass
