@@ -261,9 +261,10 @@ class AliService(BaseService):
 		requestObj["version"] = configObj["userauth"]["version"]
 		requestObj["app_auth_token"] = userInfoObj["app_auth_token"]
 		requestObj["grant_type"] = configObj["userauth"]["grant_type"]
-		requestObj["code"] = userInfoObj["code"]
+		requestObj["code"] = userInfoObj["auth_code"]
 		requestObj["sign"] = AliParamEncrypt(requestObj, configObj["secret_key"])
 		url = url_domain + "?" + urlencode(requestObj)
+		print("-----fetchUserInfo-----", url)
 		response = requests.get(url)
 		responseObj = response.json()
 		transacObj = {}
@@ -285,6 +286,8 @@ class AliService(BaseService):
 			transacObj["sub_code"] = responseObj["alipay_system_oauth_token_response"]["sub_code"]
 		if "sub_msg" in responseObj["alipay_system_oauth_token_response"]:
 			transacObj["sub_msg"] = responseObj["alipay_system_oauth_token_response"]["sub_msg"]
+		if "error_response" in responseObj:
+			transacObj["error_response"] = responseObj["error_response"]
 		if "sign" in responseObj:
 			transacObj["sign"] = responseObj["sign"]
 		if "user_id" in responseObj["alipay_system_oauth_token_response"]:

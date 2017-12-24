@@ -4,6 +4,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from controller.BaseController import *
 from lib.AES import AES
+import json
 import uuid
 import time
 import datetime
@@ -152,31 +153,34 @@ class AliFetchUserInfoController(BaseController):
 		fetchUserInfoObj = self.aliService.constructFetchUserInfoObj(self)
 		# get access token
 		userInfo = self.aliService.fetchUserInfo(AliPayment, fetchUserInfoObj)
-		state = userInfo["state"]
-		aes = AES(AES_KEY)
-		dec_state = aes.decrypt(state)
-		dec_list = dec_state.split("|")
-		if len(dec_list) != 2:
-			self.loggerError.error("aliuserauth verify failed. dec_state" + dec_state)
-			return
-		userId = dec_list[1]
-		if userId == -1:
-			self.loggerError.error("aliuserauth verify failed. userId" + userId)
-			return
-		sql("""
-				select alipay_user_auth_state user_info where id=%s
-			""", (userId))(None)(self)
-		state = self.sqlResult["alipay_user_auth_state"]
-		if userInfo["result"] and state == userInfo["state"]:
-			ali_user_id = userInfo["user_id"]
-			self.logger.info("aliuserauth verify ok. " + ali_user_id)
-			# 可以进一步调接口获取用户详细信息
-			# 此处只获取ali user id
+		if userInfo["result"]:
+			state = userInfo["state"]
+			aes = AES(AES_KEY)
+			dec_state = aes.decrypt(state)
+			dec_list = dec_state.split("|")
+			if len(dec_list) != 2:
+				self.loggerError.error("aliuserauth verify failed. dec_state" + dec_state)
+				return
+			userId = dec_list[1]
+			if userId == -1:
+				self.loggerError.error("aliuserauth verify failed. userId" + userId)
+				return
 			sql("""
-				update user_info set alipay_user_id=%s where id=%s
-			""", (ali_user_id, userId))(None)(self)
+					select alipay_user_auth_state user_info where id=%s
+				""", (userId))(None)(self)
+			state = self.sqlResult["alipay_user_auth_state"]
+			if state == userInfo["state"]:
+				ali_user_id = userInfo["user_id"]
+				self.logger.info("aliuserauth verify ok. " + ali_user_id)
+				# 可以进一步调接口获取用户详细信息
+				# 此处只获取ali user id
+				sql("""
+					update user_info set alipay_user_id=%s where id=%s
+				""", (ali_user_id, userId))(None)(self)
+			else:
+				self.loggerError.error("aliuserauth verify failed | " + userInfo["result"] + " | " + state + " | " + userInfo["state"])
 		else:
-			self.loggerError.error("aliuserauth verify failed | " + userInfo["result"] + " | " + state + " | " + userInfo["state"])
+			self.loggerError.error("aliuserauth verify failed | " + userInfo["result"] + " | " + json.dumps(userInfo, ensure_ascii = False))
 
 # 支付宝，获取用户芝麻分
 class AliFetchUserZhimaInfoController(BaseController):
