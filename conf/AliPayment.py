@@ -14,6 +14,7 @@ AliPayment = {
 	"app_startup_auth_token": "",
 	"notify_url_domain": "",
 	"return_url_domain": "",
+	"backend_return_url_domain": "",
 	"payment": { # 付款参数
 		# 支付宝公钥，验签用
 		"public_key": "",
@@ -34,6 +35,7 @@ AliPayment = {
 	"usercode": {
 		"domain_url": "https://openauth.alipay.com/oauth2/publicAppAuthorize.htm",
 		"scope": "auth_user",
+		"redirect_uri_domain": "",
 		"redirect_uri": ""
 	},
 	"userauth": {

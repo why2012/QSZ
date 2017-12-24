@@ -3,6 +3,7 @@ from __future__ import division
 from __future__ import absolute_import
 from __future__ import print_function
 from controller.BaseController import *
+from lib.AES import AES
 import uuid
 import time
 import datetime
@@ -119,37 +120,70 @@ class AliPaymentNotifyController(BaseController):
 		commonDelegate = AliPaymentNotifyDelegate(op, notifyObj, self.db)
 		failureDelegate = AliPaymentNotifyFailureDelegate(op, notifyObj, self.db)
 		if checkResult:
-			print("verify OK.", notifyObj["out_trade_no"], notifyObj["total_amount"], notifyObj["trade_no"])
+			self.logger.info("alipay verify OK. | " + notifyObj["out_trade_no"] + "|" + notifyObj["total_amount"] + " | " + notifyObj["trade_no"])
 			if(commonDelegate.delegate()):
 				self.resultBody = "success"
 			else:
 				self.resultBody = "[failed]order processing error."
 		else:
-			print("verify Fail.", notifyObj["out_trade_no"], notifyObj["total_amount"], notifyObj["trade_no"])
+			self.loggerError.error("alipay verify Fail. | " + notifyObj["out_trade_no"] + " | " + notifyObj["total_amount"] + " | " + notifyObj["trade_no"])
 			failureDelegate.delegate()
 			self.resultBody = "[failed]sign check failed."
 
-# 支付宝，获取引导用户授权url
+# 支付宝，获取引导用户授权url, 获取auth code授权
 class AliUserInfoAuthUrlController(BaseController):
 	@checklogin()
 	@service("AliService", "aliService")
 	def execute(self):
-		authObj = self.aliService.constructUserAuthObj(AliPayment)
+		authObj = self.aliService.constructUserAuthObj(AliPayment, "/payment/ali/auth_notify", self.userId)
+		state = authObj["state"]
+		print("-----", state)
+		sql("""
+				update user_info set alipay_user_auth_state=%s where id=%s
+			""", (state, "self.userId"))(None)(self)
 		userauth_url = self.aliService.getUserAuthUrl(authObj)
-		return {result: "SUCCESS", "payment_url": userauth_url}
+		return {"result": "SUCCESS", "auth_url": userauth_url}
 
 # 支付宝, 回调，获取auth token后, 获取用户信息
 class AliFetchUserInfoController(BaseController):
+	@service("AliService", "aliService")
+	def execute(self):
+		# get auth code in call back data
+		fetchUserInfoObj = self.aliService.constructFetchUserInfoObj(self)
+		# get access token
+		userInfo = self.aliService.fetchUserInfo(AliPayment, fetchUserInfoObj)
+		state = userInfo["state"]
+		aes = AES(AES_KEY)
+		dec_state = aes.decrypt(state)
+		dec_list = dec_state.split("|")
+		if len(dec_list) != 2:
+			self.loggerError.error("aliuserauth verify failed. dec_state" + dec_state)
+			return
+		userId = dec_list[1]
+		if userId == -1:
+			self.loggerError.error("aliuserauth verify failed. userId" + userId)
+			return
+		sql("""
+				select alipay_user_auth_state user_info where id=%s
+			""", (userId))(None)(self)
+		state = self.sqlResult["alipay_user_auth_state"]
+		if userInfo["result"] and state == userInfo["state"]:
+			ali_user_id = userInfo["user_id"]
+			self.logger.info("aliuserauth verify ok. " + ali_user_id)
+			# 可以进一步调接口获取用户详细信息
+			# 此处只获取ali user id
+			sql("""
+				update user_info set alipay_user_id=%s where id=%s
+			""", (ali_user_id, userId))(None)(self)
+		else:
+			self.loggerError.error("aliuserauth verify failed | " + userInfo["result"] + " | " + state + " | " + userInfo["state"])
+
+# 支付宝，获取用户芝麻分
+class AliFetchUserZhimaInfoController(BaseController):
 	@checklogin()
 	@service("AliService", "aliService")
 	def execute(self):
-		fetchUserInfoObj = self.aliService.constructFetchUserInfoObj(self)
-		userInfo = self.aliService.fetchUserInfo(AliPayment, fetchUserInfoObj)
-		# todo: 业务处理
-		if userInfo["result"]:
-			pass
-		else:
-			pass
+		return "750"
 
 # 支付宝，企业转账
 class AliEnterpriseTransferController(BaseController):

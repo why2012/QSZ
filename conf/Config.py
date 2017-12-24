@@ -38,3 +38,5 @@ WX_ACCESS_TOKEN_URL = "https://api.weixin.qq.com/cgi-bin/token?grant_type={grant
 WX_USER_INFO_URL = "https://api.weixin.qq.com/cgi-bin/user/info?access_token={access_token}&openid={openid}&lang=zh_CN"
 WX_PAY_UNIFIEDORDER = "https://api.mch.weixin.qq.com/pay/unifiedorder"
 WX_SEND_REDPACK = "https://api.mch.weixin.qq.com/mmpaymkttransfers/sendredpack"
+
+# ALI_APP_AUTH_TOKEN_NAME = "ali_app_auth_token"

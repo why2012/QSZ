@@ -555,3 +555,27 @@ token
     }
 }
 ```
+
+### 获取用户芝麻分
+地址: /payment/ali/zhima
+
+方法: post
+
+参数
+```
+```
+
+HTTP HEADER
+```
+token
+```
+
+返回
+```
+
+{
+    "status": 0,
+    "msg": "",
+    "ans": "750"
+}
+```
