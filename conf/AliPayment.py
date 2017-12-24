@@ -45,5 +45,13 @@ AliPayment = {
 		"sign_type": "RSA2",
 		"version": "1.0",
 		"grant_type": "authorization_code",
+	},
+	"zhima": {
+		"domain_url": "https://openapi.alipay.com/gateway.do",
+		"method": "zhima.credit.score.get",
+		"charset": "utf-8",
+		"sign_type": "RSA2",
+		"version": "1.0",
+		"cert_type": "ALIPAY_USER_ID",
 	}
 }

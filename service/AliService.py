@@ -301,6 +301,60 @@ class AliService(BaseService):
 
 		return transacObj
 
+	# 获取芝麻分
+	def fetchUserZhimaInfo(self, configObj, authToken):
+		url_domain = configObj["zhima"]["domain_url"]
+		requestObj = {}
+		requestObj["app_id"] = configObj["appid"]
+		requestObj["method"] = configObj["zhima"]["method"]
+		requestObj["charset"] = configObj["zhima"]["charset"]
+		requestObj["sign_type"] = configObj["zhima"]["sign_type"]
+		requestObj["timestamp"] = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+		requestObj["version"] = configObj["zhima"]["version"]
+		requestObj["app_auth_token"] = self.getAppAuthToken()
+		requestObj["auth_token"] = authToken
+		requestObj["format"] = configObj["format"]
+		requestObj["biz_content"] = "{'zhima':1}"
+
+		requestObj["transaction_id"] = ""
+		requestObj["product_code"] = "w1010100100000000001"
+
+		requestObj["sign"] = AliParamEncrypt(requestObj, configObj["secret_key"])
+		url = url_domain + "?" + urlencode(requestObj)
+		print("-----fetchUserInfo-----", url)
+		# 目前的服务器无法直接访问这个https链接，需要设置verify=False, 有待调查解决
+		response = requests.get(url, verify = False)
+		responseObj = response.json()
+		if "zhima_credit_score_get_response" not in responseObj:
+			responseObj["zhima_credit_score_get_response"] = {}
+		transacObj = {}
+		if "code" in responseObj["zhima_credit_score_get_response"]:
+			transacObj["code"] = responseObj["zhima_credit_score_get_response"]["code"]
+		if "msg" in responseObj["zhima_credit_score_get_response"]:
+			transacObj["msg"] = responseObj["zhima_credit_score_get_response"]["msg"]
+		if "biz_no" in responseObj["zhima_credit_score_get_response"]:
+			transacObj["biz_no"] = responseObj["zhima_credit_score_get_response"]["biz_no"]
+		if "zm_score" in responseObj["zhima_credit_score_get_response"]:
+			transacObj["zm_score"] = responseObj["zhima_credit_score_get_response"]["zm_score"]
+		if "code" in responseObj["zhima_credit_score_get_response"]:
+			transacObj["code"] = responseObj["zhima_credit_score_get_response"]["code"]
+		if "msg" in responseObj["zhima_credit_score_get_response"]:
+			transacObj["msg"] = responseObj["zhima_credit_score_get_response"]["msg"]
+		if "sub_code" in responseObj["zhima_credit_score_get_response"]:
+			transacObj["sub_code"] = responseObj["zhima_credit_score_get_response"]["sub_code"]
+		if "sub_msg" in responseObj["zhima_credit_score_get_response"]:
+			transacObj["sub_msg"] = responseObj["zhima_credit_score_get_response"]["sub_msg"]
+		if "zm_score" in transacObj:
+			transacObj["result"] = True
+		else:
+			transacObj["result"] = False
+		if "sign" in responseObj:
+			transacObj["sign"] = responseObj["sign"]
+
+		return transacObj
+
+
+
 
 
 

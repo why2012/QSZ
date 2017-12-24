@@ -166,17 +166,18 @@ class AliFetchUserInfoController(BaseController):
 				self.loggerError.error("aliuserauth verify failed. userId" + userId)
 				return
 			sql("""
-					select alipay_user_auth_state user_info where id=%s
+					select-one alipay_user_auth_state from user_info where id=%s
 				""", (userId))(None)(self)
 			state = self.sqlResult["alipay_user_auth_state"]
 			if state == userInfo["state"]:
 				ali_user_id = userInfo["user_id"]
+				access_token = userInfo["access_token"]
 				self.logger.info("aliuserauth verify ok. " + ali_user_id)
 				# 可以进一步调接口获取用户详细信息
 				# 此处只获取ali user id
 				sql("""
-					update user_info set alipay_user_id=%s where id=%s
-				""", (ali_user_id, userId))(None)(self)
+					update user_info set alipay_user_id=%s, alipay_user_access_token=%s where id=%s
+				""", (ali_user_id, access_token, userId))(None)(self)
 			else:
 				self.loggerError.error("aliuserauth verify failed | " + str(userInfo["result"]) + " | " + state + " | " + userInfo["state"])
 		else:
@@ -186,9 +187,34 @@ class AliFetchUserInfoController(BaseController):
 # 支付宝，获取用户芝麻分
 class AliFetchUserZhimaInfoController(BaseController):
 	@checklogin()
+	@queryparam("refresh", "string", False, "N")
 	@service("AliService", "aliService")
 	def execute(self):
-		return "750"
+		sql("""
+				select-one alipay_user_id, alipay_user_access_token, alipay_zhima_score from user_info where id=%s
+			""", (self.userId))(None)(self)
+		zhima_score = None
+		refresh = self.refresh.strip().upper()
+		if (refresh == "N" or refresh == "AUTO") and "alipay_zhima_score" in self.sqlResult and self.sqlResult["alipay_zhima_score"] is not None:
+			zhima_score = self.sqlResult["alipay_zhima_score"]
+			if zhima_score.isdigit() and int(zhima_score) > 0:
+				self.logger.info("alizhima use cache. " + zhima_score)
+				return zhima_score
+		if (refresh == "Y" or refresh == "AUTO") and zhima_score is None:
+			ali_user_id = self.sqlResult["alipay_user_id"]
+			auth_token = self.sqlResult["alipay_user_access_token"]
+			zhimaInfo = self.aliService.fetchUserZhimaInfo(AliPayment, auth_token)
+			if zhimaInfo["result"]:
+				zhima_score = zhimaInfo["zm_score"]
+				self.logger.info("alizhima verify ok. " + zhima_score)
+				sql("""
+						update user_info set alipay_zhima_score=%s where id=%s
+					""", (zhima_score, userId))(None)(self)
+				return zhima_score
+			else:
+				self.loggerError.error("alizhima verify failed | " + str(zhimaInfo["result"]) + " | " + json.dumps(zhimaInfo, ensure_ascii = False))
+				self.setResult(-1, INTERNAL_ERROR, zhimaInfo)
+		return -1
 
 # 支付宝，企业转账
 class AliEnterpriseTransferController(BaseController):

@@ -50,10 +50,10 @@ CREATE_TABLE_USER_INFO = """
 							alipay_user_status VARCHAR(2) COMMENT '用户状态（Q/T/B/W）. Q代表快速注册用户 T代表已认证用户 B代表被冻结账户 W代表已注册，未激活的账户',
 							alipay_is_certified TINYINT UNSIGNED COMMENT '是否通过实名认证',
 							alipay_is_student_certified TINYINT UNSIGNED COMMENT '是否是学生',
-							alipay_user_id VARCHAR(50) COMMENT '支付宝用户ID',
+							alipay_user_id VARCHAR(50s) COMMENT '支付宝用户ID',
 							alipay_user_access_token VARCHAR(60) COMMENT 'access token',
 							alipay_user_auth_state VARCHAR(60) COMMENT '支付宝用户auth state',
-
+							alipay_zhima_score VARCHAR(10) COMMENT '芝麻分',
 
 							authentication TINYINT UNSIGNED COMMENT '0 未审核, 1 审核中, 2 审核完成, 3 审核失败',
 							real_name VARCHAR(100),

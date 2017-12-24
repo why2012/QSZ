@@ -556,6 +556,33 @@ token
 }
 ```
 
+### 获取用户授权
+地址: /payment/ali/get_auth_url
+
+方法: post
+
+参数
+```
+```
+
+HTTP HEADER
+```
+token
+```
+
+返回
+```
+{
+    "status": 0,
+    "msg": "",
+    "ans": {
+        # 引导用户授权
+        "auth_url": "https://openauth.alipay.com/oauth2/publicAppAuthorize.htm?scope=auth_user&state=adf598e6c57dc973a85e733e880414eb&redirect_uri=http%3A%2F%2F119.29.113.28%3A20001%2Fpayment%2Fali%2Fauth_notify&domain_url=https%3A%2F%2Fopenauth.alipay.com%2Foauth2%2FpublicAppAuthorize.htm&app_id=2017081408197189",
+        "result": "SUCCESS"
+    }
+}
+```
+
 ### 获取用户芝麻分
 地址: /payment/ali/zhima
 
@@ -563,6 +590,10 @@ token
 
 参数
 ```
+[refresh: string] # 默认值 N 只是用缓存，Y 强制刷新, AUTO 若没有缓存则刷新。默认获取缓存值，若没有，则调用蚂蚁金服接口获取，若参数设置为Y，则强制调用接口获取最新值
+# 如果refresh = Y 则必须先调用获取用户授权接口，否则无法获取芝麻分
+# 若果如果refresh = AUTO，且是该用户第一次调用此接口，则必须先调用获取用户授权接口，否则无法获取芝麻分
+# 判断是否是该用户第一次调用此接口，设置refresh = N, 若返回值ans=-1，则说明是第一次调用
 ```
 
 HTTP HEADER
