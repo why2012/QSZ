@@ -97,9 +97,9 @@ def AliParamVerify(args, publicKey = ""):
 		args.append(key + "=" + value)
 	argsString = "&".join(args)
 	message = argsString
-	print("++++++++++")
-	print(args)
-	print(message)
+	# print("++++++++++")
+	# print(args)
+	# print(message)
 
 	publicKey = "-----BEGIN PUBLIC KEY-----\n" + publicKey + "\n-----END PUBLIC KEY-----"
 	pubKey = rsa.PublicKey.load_pkcs1_openssl_pem(publicKey)
