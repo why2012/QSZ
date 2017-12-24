@@ -27,12 +27,7 @@ def invoke(codeString):
 			for index, line in enumerate(lines):
 				lines[index] = line.replace("\t", "", tCount)
 			_codeString = "\n".join(lines)
-			import sys
-			if sys.version_info[0] < 3 and sys.version_info[2] < 10:
-				# for python version 2.7.5
-				six.exec_(_codeString, globals(), locals())  
-			else:
-				exec(_codeString, globals(), locals())
+			six.exec_(_codeString, globals(), locals())  
 			_fresult = op(self, *args, **kwargs)
 			return _fresult
 		return get_param
