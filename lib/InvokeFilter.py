@@ -4,6 +4,7 @@ from util.Exceptions import *
 from util.ErrorCode import *
 from service.GenericSqlService import *
 from lib.ObjectAttrParser import *
+import six
 
 def invoke(codeString):
 	def method_process(op):
@@ -29,7 +30,7 @@ def invoke(codeString):
 			import sys
 			if sys.version_info[0] < 3 and sys.version_info[2] < 10:
 				# for python version 2.7.5
-				exec _codeString in globals(), locals()  
+				six.exec_(_codeString, globals(), locals())  
 			else:
 				exec(_codeString, globals(), locals())
 			_fresult = op(self, *args, **kwargs)
