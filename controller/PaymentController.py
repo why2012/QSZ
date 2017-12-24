@@ -178,9 +178,9 @@ class AliFetchUserInfoController(BaseController):
 					update user_info set alipay_user_id=%s where id=%s
 				""", (ali_user_id, userId))(None)(self)
 			else:
-				self.loggerError.error("aliuserauth verify failed | " + userInfo["result"] + " | " + state + " | " + userInfo["state"])
+				self.loggerError.error("aliuserauth verify failed | " + str(userInfo["result"]) + " | " + state + " | " + userInfo["state"])
 		else:
-			self.loggerError.error("aliuserauth verify failed | " + userInfo["result"] + " | " + json.dumps(userInfo, ensure_ascii = False))
+			self.loggerError.error("aliuserauth verify failed | " + str(userInfo["result"]) + " | " + json.dumps(userInfo, ensure_ascii = False))
 
 # 支付宝，获取用户芝麻分
 class AliFetchUserZhimaInfoController(BaseController):
