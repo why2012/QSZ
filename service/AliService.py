@@ -265,9 +265,11 @@ class AliService(BaseService):
 		requestObj["sign"] = AliParamEncrypt(requestObj, configObj["secret_key"])
 		url = url_domain + "?" + urlencode(requestObj)
 		print("-----fetchUserInfo-----", url)
-		response = requests.get(url)
+		response = requests.get(url, verify = False)
 		responseObj = response.json()
 		transacObj = {}
+		if "alipay_system_oauth_token_response" not in responseObj:
+			responseObj["alipay_system_oauth_token_response"] = {}
 		if "user_id" in responseObj["alipay_system_oauth_token_response"]:
 			transacObj["user_id"] = responseObj["alipay_system_oauth_token_response"]["user_id"]
 		if "access_token" in responseObj["alipay_system_oauth_token_response"]:
