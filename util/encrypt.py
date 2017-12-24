@@ -73,7 +73,6 @@ def AliParamVerify(args, publicKey = ""):
 	from urllib import unquote
 	import rsa
 	import base64
-
 	sign = base64.b64decode(args["sign"])
 	paymentObj = {}
 	for key, value in args.items():
@@ -98,8 +97,9 @@ def AliParamVerify(args, publicKey = ""):
 		args.append(key + "=" + value)
 	argsString = "&".join(args)
 	message = argsString
-	# print args
-	# print message
+	# print("++++++++++")
+	# print(args)
+	# print(message)
 
 	publicKey = "-----BEGIN PUBLIC KEY-----\n" + publicKey + "\n-----END PUBLIC KEY-----"
 	pubKey = rsa.PublicKey.load_pkcs1_openssl_pem(publicKey)

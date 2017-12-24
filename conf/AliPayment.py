@@ -2,6 +2,7 @@
 
 AliPayment = {
 	"appid": "",
+	"sellerid": "",
 	"secret_key": "",
 	# 应用公钥, 无作用
 	"public_key": "",
@@ -11,6 +12,9 @@ AliPayment = {
 	"version": "1.0",
 	"app_auth_token_db_key": "ali_payment_app_authtoken",
 	"app_startup_auth_token": "",
+	"notify_url_domain": "",
+	"return_url_domain": "",
+	"backend_return_url_domain": "",
 	"payment": { # 付款参数
 		# 支付宝公钥，验签用
 		"public_key": "",
@@ -31,6 +35,7 @@ AliPayment = {
 	"usercode": {
 		"domain_url": "https://openauth.alipay.com/oauth2/publicAppAuthorize.htm",
 		"scope": "auth_user",
+		"redirect_uri_domain": "",
 		"redirect_uri": ""
 	},
 	"userauth": {
@@ -40,5 +45,13 @@ AliPayment = {
 		"sign_type": "RSA2",
 		"version": "1.0",
 		"grant_type": "authorization_code",
+	},
+	"zhima": {
+		"domain_url": "https://openapi.alipay.com/gateway.do",
+		"method": "zhima.credit.score.get",
+		"charset": "utf-8",
+		"sign_type": "RSA2",
+		"version": "1.0",
+		"cert_type": "ALIPAY_USER_ID",
 	}
 }

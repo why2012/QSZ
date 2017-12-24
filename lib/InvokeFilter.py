@@ -4,6 +4,7 @@ from util.Exceptions import *
 from util.ErrorCode import *
 from service.GenericSqlService import *
 from lib.ObjectAttrParser import *
+import six
 
 def invoke(codeString):
 	def method_process(op):
@@ -26,7 +27,7 @@ def invoke(codeString):
 			for index, line in enumerate(lines):
 				lines[index] = line.replace("\t", "", tCount)
 			_codeString = "\n".join(lines)
-			exec(_codeString, globals(), locals())
+			six.exec_(_codeString, globals(), locals())  
 			_fresult = op(self, *args, **kwargs)
 			return _fresult
 		return get_param

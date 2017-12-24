@@ -7,27 +7,43 @@ from util.encrypt import *
 import requests
 import time
 from model.AliModel import AliModel
+from lib.AES import AES
+import random
 import sys
 if sys.version_info[0] < 3:
 	from urllib import urlencode
+	from urllib import unquote
 else:
 	from urllib.parse import urlencode 
+	from urllib.parse import unquote 
 
 class AliService(BaseService):
 	def __init__(self, db, cursor):
 		self.aliModel = AliModel(db, cursor)
 
-	def constructPaymentObj(self, configObj, bodyDesc, subjectTitle, out_trade_no, total_amount_fee):
+	def constructPaymentObj(self, configObj, bodyDesc, subjectTitle, out_trade_no, total_amount_fee, return_url = None, notify_url = None):
 		paymentObj = {}
 		paymentObj["app_id"] = configObj["appid"]
 		paymentObj["method"] = configObj["payment"]["method"]
 		paymentObj["format"] = configObj["format"]
-		paymentObj["return_url"] = configObj["payment"]["return_url"]
+		if return_url is None:
+			paymentObj["return_url"] = configObj["payment"]["return_url"]
+		else:
+			if return_url.strip().startswith("http"):
+				paymentObj["return_url"] = return_url
+			else:
+				paymentObj["return_url"] = configObj["return_url_domain"] + return_url
 		paymentObj["charset"] = configObj["charset"]
 		paymentObj["sign_type"] = configObj["sign_type"]
 		paymentObj["timestamp"] = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 		paymentObj["version"] = configObj["version"]
-		paymentObj["notify_url"] = configObj["payment"]["notify_url"]
+		if notify_url is None:
+			paymentObj["notify_url"] = configObj["payment"]["notify_url"]
+		else:
+			if notify_url.strip().startswith("http"):
+				paymentObj["notify_url"] = notify_url
+			else:
+				paymentObj["notify_url"] = configObj["notify_url_domain"] + notify_url
 		# 请求参数
 		biz_content_obj = {
 			"body": bodyDesc, 
@@ -92,14 +108,30 @@ class AliService(BaseService):
 
 		return notifyObj
 
+	# 所有回调参数，用于验参
+	def constructGlobalNotifyMap(self, baseController):
+		notifyMap = baseController.getAllArgs()
+		for key, value in notifyMap.items():
+			if key not in ["sign", "sign_type"]:
+				notifyMap[key] = unquote(value)
+		return notifyMap
+
 	# 验证签名
 	# doc: https://docs.open.alipay.com/203/105286
-	def checkNotifyObj(self, configObj, notifyObj):
+	def checkNotifyObj(self, configObj, notifyMap):
 		result = False;
 		try:
-			result = AliParamVerify(notifyObj, configObj["public_key"], configObj["secret_key"])
-		except:
-			pass
+			if notifyMap["seller_id"] != configObj["sellerid"]:
+				return False
+			if notifyMap["app_id"] != configObj["appid"]:
+				return False 
+			result = AliParamVerify(notifyMap, configObj["payment"]["public_key"])
+		except e:
+			import rsa
+			if isinstance(e, rsa.VerificationError):
+				pass
+			else:
+				raise e
 		finally:
 			return result
 
@@ -156,22 +188,26 @@ class AliService(BaseService):
 
 	# 引导用户授权urlobj
 	# doc https://docs.open.alipay.com/289/105656
-	def constructUserAuthObj(self, configObj):
+	def constructUserAuthObj(self, configObj, redirect_uri = None, userId = -1):
 		authObj = {}
 		authObj["app_id"] = configObj["appid"]
 		authObj["scope"] = configObj["usercode"]["scope"]
-		authObj["redirect_uri"] = configObj["usercode"]["redirect_uri"]
-		# todo: random state and record check
-		authObj["state"] = "11875rt."
-		authObj["domain_url"] =  configObj["usercode"]["domain_url"]
+		if redirect_uri is None:
+			authObj["redirect_uri"] = configObj["usercode"]["redirect_uri"]
+		elif not redirect_uri.startswith("http"):
+			authObj["redirect_uri"] = configObj["usercode"]["redirect_uri_domain"] + redirect_uri
+		else:
+			authObj["redirect_uri"] = redirect_uri
+		aes = AES(AES_KEY)
+		authObj["state"] = aes.encrypt("%s|%s" % (str(random.random() * 10000000), userId))
+		authObj["domain_url"] = configObj["usercode"]["domain_url"]
 
 		return authObj
 
 	# 引导用户授权url, 获取auth_code
 	def getUserAuthUrl(self, authObj):
 		url_domain = authObj["domain_url"]
-		#return url_domain + "?app_id=" + authObj["app_id"] + "&scope=" + authObj["scope"] + "&redirect_uri=" + authObj["redirect_uri"] + "&state=" + authObj["state"]
-		return url_domain + "?" + urlencode({"app_id": authObj["app_id"], "scope": authObj["scope"], "redirect_uri": authObj["redirect_uri"], "state": authObj["state"]})
+		return url_domain + "?" + urlencode(authObj)
 
 	# https://docs.open.alipay.com/common/105193
 	def getAppAuthToken(self):
@@ -211,6 +247,7 @@ class AliService(BaseService):
 		notifyObj["state"] = baseController.getStrArg("state")
 		notifyObj["auth_code"] = baseController.getStrArg("auth_code")
 		notifyObj["app_auth_token"] = self.getAppAuthToken()
+		return notifyObj
 
 	# 获取用户信息, https://docs.open.alipay.com/api_9/alipay.system.oauth.token
 	def fetchUserInfo(self, configObj, userInfoObj):
@@ -224,36 +261,99 @@ class AliService(BaseService):
 		requestObj["version"] = configObj["userauth"]["version"]
 		requestObj["app_auth_token"] = userInfoObj["app_auth_token"]
 		requestObj["grant_type"] = configObj["userauth"]["grant_type"]
-		requestObj["code"] = userInfoObj["code"]
+		requestObj["code"] = userInfoObj["auth_code"]
 		requestObj["sign"] = AliParamEncrypt(requestObj, configObj["secret_key"])
-		response = requests.get(url_domain, params = requestObj)
+		url = url_domain + "?" + urlencode(requestObj)
+		print("-----fetchUserInfo-----", url)
+		# 目前的服务器无法直接访问这个https链接，需要设置verify=False, 有待调查解决
+		response = requests.get(url, verify = False)
 		responseObj = response.json()
 		transacObj = {}
-		if "user_id" in transacObj["alipay_system_oauth_token_response"]:
-			transacObj["user_id"] = transacObj["alipay_system_oauth_token_response"]["user_id"]
-		if "access_token" in transacObj["alipay_system_oauth_token_response"]:
-			transacObj["access_token"] = transacObj["alipay_system_oauth_token_response"]["access_token"]
-		if "expires_in" in transacObj["alipay_system_oauth_token_response"]:
-			transacObj["expires_in"] = transacObj["alipay_system_oauth_token_response"]["expires_in"]
-		if "refresh_token" in transacObj["alipay_system_oauth_token_response"]:
-			transacObj["refresh_token"] = transacObj["alipay_system_oauth_token_response"]["refresh_token"]
-		if "re_expires_in" in transacObj["alipay_system_oauth_token_response"]:
-			transacObj["re_expires_in"] = transacObj["alipay_system_oauth_token_response"]["re_expires_in"]
-		if "code" in transacObj["alipay_system_oauth_token_response"]:
-			transacObj["code"] = transacObj["alipay_system_oauth_token_response"]["code"]
-		if "msg" in transacObj["alipay_system_oauth_token_response"]:
-			transacObj["msg"] = transacObj["alipay_system_oauth_token_response"]["msg"]
-		if "sub_code" in transacObj["alipay_system_oauth_token_response"]:
-			transacObj["sub_code"] = transacObj["alipay_system_oauth_token_response"]["sub_code"]
-		if "sub_msg" in transacObj["alipay_system_oauth_token_response"]:
-			transacObj["sub_msg"] = transacObj["alipay_system_oauth_token_response"]["sub_msg"]
-		if "sign" in transacObj:
-			transacObj["sign"] = transacObj["sign"]
-		if "user_id" in transacObj:
+		if "alipay_system_oauth_token_response" not in responseObj:
+			responseObj["alipay_system_oauth_token_response"] = {}
+		if "user_id" in responseObj["alipay_system_oauth_token_response"]:
+			transacObj["user_id"] = responseObj["alipay_system_oauth_token_response"]["user_id"]
+		if "access_token" in responseObj["alipay_system_oauth_token_response"]:
+			transacObj["access_token"] = responseObj["alipay_system_oauth_token_response"]["access_token"]
+		if "expires_in" in responseObj["alipay_system_oauth_token_response"]:
+			transacObj["expires_in"] = responseObj["alipay_system_oauth_token_response"]["expires_in"]
+		if "refresh_token" in responseObj["alipay_system_oauth_token_response"]:
+			transacObj["refresh_token"] = responseObj["alipay_system_oauth_token_response"]["refresh_token"]
+		if "re_expires_in" in responseObj["alipay_system_oauth_token_response"]:
+			transacObj["re_expires_in"] = responseObj["alipay_system_oauth_token_response"]["re_expires_in"]
+		if "code" in responseObj["alipay_system_oauth_token_response"]:
+			transacObj["code"] = responseObj["alipay_system_oauth_token_response"]["code"]
+		if "msg" in responseObj["alipay_system_oauth_token_response"]:
+			transacObj["msg"] = responseObj["alipay_system_oauth_token_response"]["msg"]
+		if "sub_code" in responseObj["alipay_system_oauth_token_response"]:
+			transacObj["sub_code"] = responseObj["alipay_system_oauth_token_response"]["sub_code"]
+		if "sub_msg" in responseObj["alipay_system_oauth_token_response"]:
+			transacObj["sub_msg"] = responseObj["alipay_system_oauth_token_response"]["sub_msg"]
+		if "error_response" in responseObj:
+			transacObj["error_response"] = responseObj["error_response"]
+		if "sign" in responseObj:
+			transacObj["sign"] = responseObj["sign"]
+		if "user_id" in responseObj["alipay_system_oauth_token_response"]:
 			transacObj["result"] = True
 		else:
 			transacObj["result"] = False
+		transacObj["state"] = userInfoObj["state"]
+
 		return transacObj
+
+	# 获取芝麻分
+	def fetchUserZhimaInfo(self, configObj, authToken):
+		url_domain = configObj["zhima"]["domain_url"]
+		requestObj = {}
+		requestObj["app_id"] = configObj["appid"]
+		requestObj["method"] = configObj["zhima"]["method"]
+		requestObj["charset"] = configObj["zhima"]["charset"]
+		requestObj["sign_type"] = configObj["zhima"]["sign_type"]
+		requestObj["timestamp"] = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+		requestObj["version"] = configObj["zhima"]["version"]
+		requestObj["app_auth_token"] = self.getAppAuthToken()
+		requestObj["auth_token"] = authToken
+		requestObj["format"] = configObj["format"]
+		requestObj["biz_content"] = "{'zhima':1}"
+
+		requestObj["transaction_id"] = ""
+		requestObj["product_code"] = "w1010100100000000001"
+
+		requestObj["sign"] = AliParamEncrypt(requestObj, configObj["secret_key"])
+		url = url_domain + "?" + urlencode(requestObj)
+		print("-----fetchUserInfo-----", url)
+		# 目前的服务器无法直接访问这个https链接，需要设置verify=False, 有待调查解决
+		response = requests.get(url, verify = False)
+		responseObj = response.json()
+		if "zhima_credit_score_get_response" not in responseObj:
+			responseObj["zhima_credit_score_get_response"] = {}
+		transacObj = {}
+		if "code" in responseObj["zhima_credit_score_get_response"]:
+			transacObj["code"] = responseObj["zhima_credit_score_get_response"]["code"]
+		if "msg" in responseObj["zhima_credit_score_get_response"]:
+			transacObj["msg"] = responseObj["zhima_credit_score_get_response"]["msg"]
+		if "biz_no" in responseObj["zhima_credit_score_get_response"]:
+			transacObj["biz_no"] = responseObj["zhima_credit_score_get_response"]["biz_no"]
+		if "zm_score" in responseObj["zhima_credit_score_get_response"]:
+			transacObj["zm_score"] = responseObj["zhima_credit_score_get_response"]["zm_score"]
+		if "code" in responseObj["zhima_credit_score_get_response"]:
+			transacObj["code"] = responseObj["zhima_credit_score_get_response"]["code"]
+		if "msg" in responseObj["zhima_credit_score_get_response"]:
+			transacObj["msg"] = responseObj["zhima_credit_score_get_response"]["msg"]
+		if "sub_code" in responseObj["zhima_credit_score_get_response"]:
+			transacObj["sub_code"] = responseObj["zhima_credit_score_get_response"]["sub_code"]
+		if "sub_msg" in responseObj["zhima_credit_score_get_response"]:
+			transacObj["sub_msg"] = responseObj["zhima_credit_score_get_response"]["sub_msg"]
+		if "zm_score" in transacObj:
+			transacObj["result"] = True
+		else:
+			transacObj["result"] = False
+		if "sign" in responseObj:
+			transacObj["sign"] = responseObj["sign"]
+
+		return transacObj
+
+
 
 
 

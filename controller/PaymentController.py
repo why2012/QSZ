@@ -3,9 +3,13 @@ from __future__ import division
 from __future__ import absolute_import
 from __future__ import print_function
 from controller.BaseController import *
+from lib.AES import AES
+import json
 import uuid
 import time
 import datetime
+import six
+import abc
 
 # 申请微信预支付交易单, 返回prepayid
 class WxPrepayController(BaseController):
@@ -55,53 +59,165 @@ class AliPaymentUrlController(BaseController):
 	@queryparam("total_fee", "float")
 	@queryparam("body_desc", "string")
 	@queryparam("subject_title", "string")
+	@queryparam("notify_url", "string")
+	@queryparam("return_url", "string")
 	def execute(self):
 		out_trade_no = self.out_trade_no # 订单号
 		total_fee = self.total_fee # 金额
 		body_desc = self.body_desc # 描述
 		subject_title = self.subject_title # 标题 
-		paymentObj = self.aliService.constructPaymentObj(AliPayment, body_desc, subject_title, out_trade_no, total_fee)
+		paymentObj = self.aliService.constructPaymentObj(AliPayment, body_desc, subject_title, out_trade_no, total_fee, return_url = self.return_url, notify_url = self.notify_url)
 		payment_url = self.aliService.getPaymentUrl(AliPayment["payment"]["domain_url"], paymentObj)
 		return {"result": "SUCCESS", "payment_url": payment_url} #
+
+@six.add_metaclass(abc.ABCMeta)
+class BaseDelegate(object):
+	def __init__(self):
+		pass
+
+	@abc.abstractmethod
+	def delegate():
+		"""
+		"""
+
+class AliPaymentNotifyDelegate(BaseDelegate):
+	def __init__(self, op, notifyObj, db):
+		super(AliPaymentNotifyDelegate, self).__init__()
+		self.op = op
+		self.notifyObj = notifyObj
+		self.db = db
+
+	def delegate(self):
+		processor = None
+		if self.op == PAYMENT_GLOBAL_CONFIG["PRE_ORDER_PAYMENT"]:
+			from .OrderProcedureController import PreOrderProcessor
+			processor = PreOrderProcessor(self.notifyObj["out_trade_no"], self.db)
+
+		if processor is not None:
+			result_bool = processor.process()
+			return result_bool
+
+class AliPaymentNotifyFailureDelegate(BaseDelegate):
+	def __init__(self, op, notifyObj, db):
+		super(AliPaymentNotifyFailureDelegate, self).__init__()
+		self.op = op
+		self.notifyObj = notifyObj
+		self.db = db
+
+	def delegate(self):
+		pass
 
 # 支付宝回调接口
 class AliPaymentNotifyController(BaseController):
 	@service("AliService", "aliService")
-	def execute(self):
+	def execute(self, op):
+		print("OP: " + op)
 		notifyObj = self.aliService.constructNotifyObj(self)
+		notifyMap = self.aliService.constructGlobalNotifyMap(self)
+		print(notifyMap)
 		# sign 验签
-		checkResult = self.aliService.checkNotifyObj(notifyObj, AliPayment)
+		checkResult = self.aliService.checkNotifyObj(AliPayment, notifyMap)
+		# delegate
+		commonDelegate = AliPaymentNotifyDelegate(op, notifyObj, self.db)
+		failureDelegate = AliPaymentNotifyFailureDelegate(op, notifyObj, self.db)
 		if checkResult:
-			# todo: 业务处理
-
-			self.resultBody = "success"
+			self.logger.info("alipay verify OK. | " + notifyObj["out_trade_no"] + "|" + notifyObj["total_amount"] + " | " + notifyObj["trade_no"])
+			if(commonDelegate.delegate()):
+				self.resultBody = "success"
+			else:
+				self.resultBody = "[failed]order processing error."
 		else:
+			self.loggerError.error("alipay verify Fail. | " + notifyObj["out_trade_no"] + " | " + notifyObj["total_amount"] + " | " + notifyObj["trade_no"])
+			failureDelegate.delegate()
 			self.resultBody = "[failed]sign check failed."
 
-# 支付宝，获取引导用户授权url
-class AliUserInfoAuthUrl(BaseController):
+# 支付宝，获取引导用户授权url, 获取auth code授权
+class AliUserInfoAuthUrlController(BaseController):
 	@checklogin()
 	@service("AliService", "aliService")
 	def execute(self):
-		authObj = self.aliService.constructUserAuthObj(AliPayment)
+		authObj = self.aliService.constructUserAuthObj(AliPayment, "/payment/ali/auth_notify", self.userId)
+		state = authObj["state"]
+		print("-----", state)
+		sql("""
+				update user_info set alipay_user_auth_state=%s where id=%s
+			""", (state, "self.userId"))(None)(self)
 		userauth_url = self.aliService.getUserAuthUrl(authObj)
-		return {result: "SUCCESS", "payment_url": userauth_url}
+		return {"result": "SUCCESS", "auth_url": userauth_url}
 
 # 支付宝, 回调，获取auth token后, 获取用户信息
-class AliFetchUserInfo(BaseController):
-	@checklogin()
+class AliFetchUserInfoController(BaseController):
 	@service("AliService", "aliService")
 	def execute(self):
+		# get auth code in call back data
 		fetchUserInfoObj = self.aliService.constructFetchUserInfoObj(self)
+		# get access token
 		userInfo = self.aliService.fetchUserInfo(AliPayment, fetchUserInfoObj)
-		# todo: 业务处理
 		if userInfo["result"]:
-			pass
+			state = userInfo["state"]
+			aes = AES(AES_KEY)
+			dec_state = aes.decrypt(state)
+			dec_list = dec_state.split("|")
+			if len(dec_list) != 2:
+				self.loggerError.error("aliuserauth verify failed. dec_state" + dec_state)
+				return
+			userId = dec_list[1]
+			if userId == -1:
+				self.loggerError.error("aliuserauth verify failed. userId" + userId)
+				return
+			sql("""
+					select-one alipay_user_auth_state from user_info where id=%s
+				""", (userId))(None)(self)
+			state = self.sqlResult["alipay_user_auth_state"]
+			if state == userInfo["state"]:
+				ali_user_id = userInfo["user_id"]
+				access_token = userInfo["access_token"]
+				self.logger.info("aliuserauth verify ok. " + ali_user_id)
+				# 可以进一步调接口获取用户详细信息
+				# 此处只获取ali user id
+				sql("""
+					update user_info set alipay_user_id=%s, alipay_user_access_token=%s where id=%s
+				""", (ali_user_id, access_token, userId))(None)(self)
+			else:
+				self.loggerError.error("aliuserauth verify failed | " + str(userInfo["result"]) + " | " + state + " | " + userInfo["state"])
 		else:
-			pass
+			self.loggerError.error("aliuserauth verify failed | " + str(userInfo["result"]) + " | " + json.dumps(userInfo, ensure_ascii = False))
+			self.setResult("aliuserauth verify failed", INTERNAL_ERROR, userInfo)
+
+# 支付宝，获取用户芝麻分
+class AliFetchUserZhimaInfoController(BaseController):
+	@checklogin()
+	@queryparam("refresh", "string", False, "N")
+	@service("AliService", "aliService")
+	def execute(self):
+		sql("""
+				select-one alipay_user_id, alipay_user_access_token, alipay_zhima_score from user_info where id=%s
+			""", (self.userId))(None)(self)
+		zhima_score = None
+		refresh = self.refresh.strip().upper()
+		if (refresh == "N" or refresh == "AUTO") and "alipay_zhima_score" in self.sqlResult and self.sqlResult["alipay_zhima_score"] is not None:
+			zhima_score = self.sqlResult["alipay_zhima_score"]
+			if zhima_score.isdigit() and int(zhima_score) > 0:
+				self.logger.info("alizhima use cache. " + zhima_score)
+				return zhima_score
+		if (refresh == "Y" or refresh == "AUTO") and zhima_score is None:
+			ali_user_id = self.sqlResult["alipay_user_id"]
+			auth_token = self.sqlResult["alipay_user_access_token"]
+			zhimaInfo = self.aliService.fetchUserZhimaInfo(AliPayment, auth_token)
+			if zhimaInfo["result"]:
+				zhima_score = zhimaInfo["zm_score"]
+				self.logger.info("alizhima verify ok. " + zhima_score)
+				sql("""
+						update user_info set alipay_zhima_score=%s where id=%s
+					""", (zhima_score, userId))(None)(self)
+				return zhima_score
+			else:
+				self.loggerError.error("alizhima verify failed | " + str(zhimaInfo["result"]) + " | " + json.dumps(zhimaInfo, ensure_ascii = False))
+				self.setResult(-1, INTERNAL_ERROR, zhimaInfo)
+		return -1
 
 # 支付宝，企业转账
-class AliEnterpriseTransfer(BaseController):
+class AliEnterpriseTransferController(BaseController):
 	@checklogin()
 	@service("AliService", "aliService")
 	def execute(self):
@@ -125,7 +241,7 @@ class AliEnterpriseTransfer(BaseController):
 # 开发者获取支付宝应用的auth_code和auth_token， 回调
 # https://docs.open.alipay.com/common/105193
 # 调用url https://openauth.alipay.com/oauth2/appToAppAuth.htm?app_id=2015101400446982&redirect_uri=http%3A%2F%2Fexample.com
-class AliGetAuthCode(BaseController):
+class AliGetAuthCodeController(BaseController):
 	@service("AliService", "aliService")
 	def execute(self):
 		import requests

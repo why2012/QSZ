@@ -5,7 +5,12 @@ from controller.UserController import *
 from controller.HouseController import *
 from controller.FindHouseController import *
 from controller.InviterController import *
-from controller.OrderProcedure import *
+from controller.OrderProcedureController import *
+from controller.PaymentController import AliPaymentNotifyController
+from controller.PaymentController import AliUserInfoAuthUrlController
+from controller.PaymentController import AliFetchUserInfoController
+from controller.PaymentController import AliFetchUserZhimaInfoController
+from controller.BackendController import *
 
 class UrlMapper(object):
 
@@ -34,8 +39,20 @@ class UrlMapper(object):
 			(r"/invitation/getcode", GetInvitationCode), # 获取邀请码
 			(r"/invitation/setcode", SetInvitationCode), # 填写邀请码
 
-			(r"/order/create_preorder", CreatePreOrder), # 创建看房申请			
-			(r"/order/get_preorder_paymenturl", GetPreOrderPaymentUrl), # 获取看房申请支付url
+			(r"/payment/ali/nontify/(.*)", AliPaymentNotifyController), # 支付回调接口
+			(r"/payment/ali/nontify/userauth", AliPaymentNotifyController), # 用户授权回调接口
+
+			(r"/order/create_preorder", CreatePreOrderController), # 创建看房申请			
+			(r"/order/get_preorder_paymenturl", GetPreOrderPaymentUrlController), # 获取看房申请支付url
+
+			(r"/_merchant/get_auth_code_url", MerchantAuthGrantGetAuthCodeUrlController), # 商户后台，获取authcode授权链接， 入口
+			(r"/_merchant/get_auth_token_url", MerchantAuthGrantReturnAuthCodeUrlController), # 商户后台，回调，获取app auth token
+
+			(r"/payment/ali/get_auth_url", AliUserInfoAuthUrlController), # 获取支付宝引导用户授权url
+			(r"/payment/ali/auth_notify", AliFetchUserInfoController), # 用户授权回调
+
+			(r"/payment/ali/zhima", AliFetchUserZhimaInfoController), # 获取用户芝麻分
+
 		]	
 
 	def getMapper(self):

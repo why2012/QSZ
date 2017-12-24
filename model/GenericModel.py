@@ -7,6 +7,7 @@ class GenericModel(BaseModel):
 		self.cursor = cursor
 
 	def SELECT_ONE(self, sqlString, sqlParams, attrmap):
+		self.dev_print_sql(sqlString, sqlParams)
 		self.cursor.execute(sqlString, sqlParams)
 		item = self.cursor.fetchone()
 		resultMap = {}
@@ -16,6 +17,7 @@ class GenericModel(BaseModel):
 		return resultMap
 
 	def SELECT(self, sqlString, sqlParams, attrmap):
+		self.dev_print_sql(sqlString, sqlParams)
 		self.cursor.execute(sqlString, sqlParams)
 		itemList = self.cursor.fetchall()
 		resultList = []
@@ -30,12 +32,14 @@ class GenericModel(BaseModel):
 	def UPDATE(self, sqlString, sqlParams, holdon = False):
 		# print '----------', sqlString
 		# print sqlParams
+		self.dev_print_sql(sqlString, sqlParams)
 		self.cursor.execute(sqlString, sqlParams)
 		if not holdon:
 			self.db.commit()
 		return True
 
 	def INSERT(self, sqlString, sqlParams, holdon = False):
+		self.dev_print_sql(sqlString, sqlParams)
 		self.cursor.execute(sqlString, sqlParams)
 		lastid = self.cursor.lastrowid
 		if not holdon:
@@ -43,6 +47,7 @@ class GenericModel(BaseModel):
 		return lastid
 
 	def DELETE(self, sqlString, sqlParams, holdon = False):
+		self.dev_print_sql(sqlString, sqlParams)
 		self.cursor.execute(sqlString, sqlParams)
 		if not holdon:
 			self.db.commit()

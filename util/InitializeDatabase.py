@@ -43,6 +43,18 @@ CREATE_TABLE_USER_INFO = """
 							wx_headimgurl VARCHAR(150),
 							wx_privilege TEXT,
 
+							alipay_province VARCHAR(50) COMMENT '省份名称',
+							alipay_city VARCHAR(50) COMMENT '市名称',
+							alipay_gender TINYINT UNSIGNED COMMENT '值为1时是男性，值为2时是女性，值为0时是未知',  
+							alipay_user_type_value VARCHAR(2) COMMENT '用户类型（1/2） 1代表公司账户2代表个人账户',
+							alipay_user_status VARCHAR(2) COMMENT '用户状态（Q/T/B/W）. Q代表快速注册用户 T代表已认证用户 B代表被冻结账户 W代表已注册，未激活的账户',
+							alipay_is_certified TINYINT UNSIGNED COMMENT '是否通过实名认证',
+							alipay_is_student_certified TINYINT UNSIGNED COMMENT '是否是学生',
+							alipay_user_id VARCHAR(50s) COMMENT '支付宝用户ID',
+							alipay_user_access_token VARCHAR(60) COMMENT 'access token',
+							alipay_user_auth_state VARCHAR(60) COMMENT '支付宝用户auth state',
+							alipay_zhima_score VARCHAR(10) COMMENT '芝麻分',
+
 							authentication TINYINT UNSIGNED COMMENT '0 未审核, 1 审核中, 2 审核完成, 3 审核失败',
 							real_name VARCHAR(100),
 							nickname VARCHAR(100) COMMENT '称呼',
@@ -222,7 +234,7 @@ CREATE_TABLE_PRE_ORDER = """
 							owner_id INT UNSIGNED NOT NULL,
 							renter_id INT UNSIGNED NOT NULL,
 							house_id BIGINT UNSIGNED NOT NULL,
-							  TINYINT UNSIGNED COMMENT '1 租客提交, 2 支付完成, 3 完成看房, 4 投诉退款, 5 退款成功',
+							status TINYINT UNSIGNED COMMENT '1 租客提交, 2 支付完成, 3 完成看房, 4 投诉退款, 5 退款成功',
 							create_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 							update_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
