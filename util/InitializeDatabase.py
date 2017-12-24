@@ -222,7 +222,7 @@ CREATE_TABLE_PRE_ORDER = """
 							owner_id INT UNSIGNED NOT NULL,
 							renter_id INT UNSIGNED NOT NULL,
 							house_id BIGINT UNSIGNED NOT NULL,
-							  TINYINT UNSIGNED COMMENT '1 租客提交, 2 支付完成, 3 完成看房, 4 投诉退款, 5 退款成功',
+							status TINYINT UNSIGNED COMMENT '1 租客提交, 2 支付完成, 3 完成看房, 4 投诉退款, 5 退款成功',
 							create_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 							update_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 

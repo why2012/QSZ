@@ -6,6 +6,8 @@ from controller.BaseController import *
 import uuid
 import time
 import datetime
+import six
+import abc
 
 # 申请微信预支付交易单, 返回prepayid
 class WxPrepayController(BaseController):
@@ -66,6 +68,43 @@ class AliPaymentUrlController(BaseController):
 		payment_url = self.aliService.getPaymentUrl(AliPayment["payment"]["domain_url"], paymentObj)
 		return {"result": "SUCCESS", "payment_url": payment_url} #
 
+@six.add_metaclass(abc.ABCMeta)
+class BaseDelegate(object):
+	def __init__(self):
+		pass
+
+	@abc.abstractmethod
+	def delegate():
+		"""
+		"""
+
+class AliPaymentNotifyDelegate(BaseDelegate):
+	def __init__(self, op, notifyObj, db):
+		super(AliPaymentNotifyDelegate, self).__init__()
+		self.op = op
+		self.notifyObj = notifyObj
+		self.db = db
+
+	def delegate(self):
+		processor = None
+		if self.op == PAYMENT_GLOBAL_CONFIG["PRE_ORDER_PAYMENT"]:
+			from .OrderProcedure import PreOrderProcessor
+			processor = PreOrderProcessor(self.notifyObj["out_trade_no"], self.db)
+			
+		if processor is not None:
+			result_bool = processor.process()
+			return result_bool
+
+class AliPaymentNotifyFailureDelegate(BaseDelegate):
+	def __init__(self, op, notifyObj, db):
+		super(AliPaymentNotifyFailureDelegate, self).__init__()
+		self.op = op
+		self.notifyObj = notifyObj
+		self.db = db
+
+	def delegate(self):
+		pass
+
 # 支付宝回调接口
 class AliPaymentNotifyController(BaseController):
 	@service("AliService", "aliService")
@@ -76,12 +115,18 @@ class AliPaymentNotifyController(BaseController):
 		print(notifyMap)
 		# sign 验签
 		checkResult = self.aliService.checkNotifyObj(AliPayment, notifyMap)
+		# delegate
+		commonDelegate = AliPaymentNotifyDelegate(op, notifyObj, self.db)
+		failureDelegate = AliPaymentNotifyFailureDelegate(op, notifyObj, self.db)
 		if checkResult:
-			# todo: 业务处理
-			print("verify OK.")
-			self.resultBody = "success"
+			print("verify OK.", notifyObj["out_trade_no"], notifyObj["total_amount"], notifyObj["trade_no"])
+			if(commonDelegate.delegate()):
+				self.resultBody = "success"
+			else:
+				self.resultBody = "[failed]order processing error."
 		else:
-			print("verify Fail.")
+			print("verify Fail.", notifyObj["out_trade_no"], notifyObj["total_amount"], notifyObj["trade_no"])
+			failureDelegate.delegate()
 			self.resultBody = "[failed]sign check failed."
 
 # 支付宝，获取引导用户授权url

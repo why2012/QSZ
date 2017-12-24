@@ -6,6 +6,8 @@ from controller.BaseController import *
 import uuid
 import time
 import datetime
+import abc
+import six
 
 # 创建看房申请
 class CreatePreOrder(BaseController):
@@ -28,6 +30,26 @@ class GetPreOrderPaymentUrl(BaseController):
 		notify_url = PAYMENT_GLOBAL_CONFIG["NOTIFY_MID_PATH"] + PAYMENT_GLOBAL_CONFIG["PRE_ORDER_PAYMENT"]
 		innerhttp("PaymentController.AliPaymentUrlController", {"out_trade_no": "self.pre_order_id", "total_fee": 0.01, "body_desc": "pre order fee", "subject_title": "信息费", "return_url": return_url, "notify_url": notify_url}, headers = {TOKEN_NAME: "self.token_original"})(None)(self)
 		return self.controller_bucket["AliPaymentUrlController"].jsonobj
+
+@six.add_metaclass(abc.ABCMeta)
+class BaseProcessor(object):
+	def __init__(self, db):
+		self.db = db
+		self.cursor = self.db.cursor()
+
+	@abc.abstractmethod
+	def process(self):
+		"""
+		"""
+
+class PreOrderProcessor(BaseProcessor):
+	def __init__(self, pre_order_id, db):
+		super(PreOrderProcessor, self).__init__(db)
+		self.pre_order_id = int(pre_order_id)
+
+	@sql("update pre_order_info set status=2 where id=%s", ("self.pre_order_id",))
+	def process(self):
+		return True
 
 # 看房红包支付结果
 class PreOrderPaymentResult(BaseController):
