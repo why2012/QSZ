@@ -23,12 +23,16 @@ ConfigSecHelper.start_extract({"WxPayment": WxPayment, "AliPayment": AliPayment,
 PAYMENT_GLOBAL_CONFIG = {
 	"NOTIFY_MID_PATH": "/payment/ali/nontify/",
 	"PRE_ORDER_PAYMENT": "pre_order_payment",
+	"APP_AUTH_NOTIFY": "app_auth_notify",
+	"USER_AUTH_NOTIFY": "user_auth_notify",
 }
 
 AES_KEY = "skitfn,.|1-AJ*2^"
 TOKEN_HEADER = "QSZ_TOKEN"
 TOKEN_EXPIRE = 3600 * 24 * 5
 TOKEN_NAME = "token"
+
+VERIFY_HTTPS = False
 
 MCH_NAME = "QSZ" # 商户名
 WX_ACCESS_TOKEN_KEY = "wx_access_token"

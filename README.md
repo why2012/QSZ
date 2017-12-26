@@ -536,6 +536,13 @@ token
 参数
 ```
 pre_order_id: 看房申请id
+return_url: 支付成功或失败后，把结果带给前端, url是包括域名完整链接,例如http://domain/
+# 返回携带以下参数
+#示例1: http://domain/?total_amount=0.01&timestamp=2011-11-11+23%3A11%3A46&sign=&trade_no=&sign_type=RSA2&auth_app_id=&charset=utf-8&seller_id=&method=alipay.trade.wap.pay.return&app_id=&out_trade_no=71&version=1.0
+
+#示例2: https://m.alipay.com/Gk8NF23?total_amount=9.00&timestamp=2016-08-11+19%3A36%3A01&sign=ErCRRVmW%2FvXu1XO76k%2BUr4gYKC5%2FWgZGSo%2FR7nbL%2FPU7yFXtQJ2CjYPcqumxcYYB5x%2FzaRJXWBLN3jJXr01Icph8AZGEmwNuzvfezRoWny6%2Fm0iVQf7hfgn66z2yRfXtRSqtSTQWhjMa5YXE7MBMKFruIclYVTlfWDN30Cw7k%2Fk%3D&trade_no=2016081121001004630200142207&sign_type=RSA2&charset=UTF-8&seller_id=2088111111116894&method=alipay.trade.wap.pay.return&app_id=2016040501024706&out_trade_no=70501111111S001111119&version=1.0
+
+#文档参考: https://docs.open.alipay.com/203/107090
 ```
 
 HTTP HEADER
@@ -583,6 +590,31 @@ token
 }
 ```
 
+### 查看用户是否已经绑定支付宝账号
+地址: /payment/ali/binding_status
+
+方法: post
+
+如果没有绑定，需要调用用户授权接口
+
+参数
+```
+```
+
+HTTP HEADER
+```
+token
+```
+
+返回
+```
+{
+    "status": 0,
+    "msg": "",
+    "ans": 1 # or -1
+}
+```
+
 ### 获取用户芝麻分
 地址: /payment/ali/zhima
 
@@ -590,7 +622,7 @@ token
 
 参数
 ```
-[refresh: string] # 默认值 N 只是用缓存，Y 强制刷新, AUTO 若没有缓存则刷新。默认获取缓存值，若没有，则调用蚂蚁金服接口获取，若参数设置为Y，则强制调用接口获取最新值
+[refresh: string] # 默认值 AUTO, N 只是用缓存，Y 强制刷新, AUTO 若没有缓存则刷新。默认获取缓存值，若没有，则调用蚂蚁金服接口获取，若参数设置为Y，则强制调用接口获取最新值
 # 如果refresh = Y 则必须先调用获取用户授权接口，否则无法获取芝麻分
 # 若果如果refresh = AUTO，且是该用户第一次调用此接口，则必须先调用获取用户授权接口，否则无法获取芝麻分
 # 判断是否是该用户第一次调用此接口，设置refresh = N, 若返回值ans=-1，则说明是第一次调用

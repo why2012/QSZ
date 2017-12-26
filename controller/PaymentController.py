@@ -72,8 +72,9 @@ class AliPaymentUrlController(BaseController):
 
 @six.add_metaclass(abc.ABCMeta)
 class BaseDelegate(object):
-	def __init__(self):
-		pass
+	def __init__(self, op, db):
+		self.op = op.strip()
+		self.db = db
 
 	@abc.abstractmethod
 	def delegate():
@@ -82,10 +83,8 @@ class BaseDelegate(object):
 
 class AliPaymentNotifyDelegate(BaseDelegate):
 	def __init__(self, op, notifyObj, db):
-		super(AliPaymentNotifyDelegate, self).__init__()
-		self.op = op
+		super(AliPaymentNotifyDelegate, self).__init__(op, db)
 		self.notifyObj = notifyObj
-		self.db = db
 
 	def delegate(self):
 		processor = None
@@ -99,10 +98,8 @@ class AliPaymentNotifyDelegate(BaseDelegate):
 
 class AliPaymentNotifyFailureDelegate(BaseDelegate):
 	def __init__(self, op, notifyObj, db):
-		super(AliPaymentNotifyFailureDelegate, self).__init__()
-		self.op = op
+		super(AliPaymentNotifyFailureDelegate, self).__init__(op, db)
 		self.notifyObj = notifyObj
-		self.db = db
 
 	def delegate(self):
 		pass
@@ -136,58 +133,92 @@ class AliUserInfoAuthUrlController(BaseController):
 	@checklogin()
 	@service("AliService", "aliService")
 	def execute(self):
-		authObj = self.aliService.constructUserAuthObj(AliPayment, "/payment/ali/auth_notify", self.userId)
+		authObj = self.aliService.constructUserAuthObj(AliPayment, "/payment/ali/auth_notify?op=" + PAYMENT_GLOBAL_CONFIG["USER_AUTH_NOTIFY"], self.userId)
 		state = authObj["state"]
-		print("-----", state)
 		sql("""
 				update user_info set alipay_user_auth_state=%s where id=%s
 			""", (state, "self.userId"))(None)(self)
 		userauth_url = self.aliService.getUserAuthUrl(authObj)
 		return {"result": "SUCCESS", "auth_url": userauth_url}
 
-# 支付宝, 回调，获取auth token后, 获取用户信息
-class AliFetchUserInfoController(BaseController):
-	@service("AliService", "aliService")
-	def execute(self):
+class AliPaymentUserAuthDelegate(BaseDelegate):
+	def __init__(self, op, _self, db):
+		super(AliPaymentUserAuthDelegate, self).__init__(op, db)
+		self._self = _self
+
+	def __process_app_auth(self, _self):
+		innerhttp("BackendController.MerchantAuthGrantReturnAuthCodeUrlController")(None)(_self, _self.application, _self.request)
+
+	# 支付宝, 回调，获取auth token后, 获取用户信息
+	def __process_user_auth(self, _self):
 		# get auth code in call back data
-		fetchUserInfoObj = self.aliService.constructFetchUserInfoObj(self)
+		fetchUserInfoObj = _self.aliService.constructFetchUserInfoObj(_self)
+		print(fetchUserInfoObj)
 		# get access token
-		userInfo = self.aliService.fetchUserInfo(AliPayment, fetchUserInfoObj)
+		userInfo = _self.aliService.fetchUserInfo(AliPayment, fetchUserInfoObj)
+		print("-----user-code---", userInfo)
 		if userInfo["result"]:
 			state = userInfo["state"]
 			aes = AES(AES_KEY)
 			dec_state = aes.decrypt(state)
 			dec_list = dec_state.split("|")
 			if len(dec_list) != 2:
-				self.loggerError.error("aliuserauth verify failed. dec_state" + dec_state)
+				_self.loggerError.error("aliuserauth verify failed. dec_state" + dec_state)
 				return
 			userId = dec_list[1]
 			if userId == -1:
-				self.loggerError.error("aliuserauth verify failed. userId" + userId)
+				_self.loggerError.error("aliuserauth verify failed. userId" + userId)
 				return
 			sql("""
 					select-one alipay_user_auth_state from user_info where id=%s
-				""", (userId))(None)(self)
-			state = self.sqlResult["alipay_user_auth_state"]
+				""", (userId))(None)(_self)
+			state = _self.sqlResult["alipay_user_auth_state"]
 			if state == userInfo["state"]:
 				ali_user_id = userInfo["user_id"]
 				access_token = userInfo["access_token"]
-				self.logger.info("aliuserauth verify ok. " + ali_user_id)
+				_self.logger.info("aliuserauth verify ok. " + ali_user_id)
 				# 可以进一步调接口获取用户详细信息
 				# 此处只获取ali user id
 				sql("""
 					update user_info set alipay_user_id=%s, alipay_user_access_token=%s where id=%s
-				""", (ali_user_id, access_token, userId))(None)(self)
+				""", (ali_user_id, access_token, userId))(None)(_self)
+				_self.resultBody = "success"
 			else:
-				self.loggerError.error("aliuserauth verify failed | " + str(userInfo["result"]) + " | " + state + " | " + userInfo["state"])
+				_self.loggerError.error("aliuserauth verify failed | " + str(userInfo["result"]) + " | " + state + " | " + userInfo["state"])
 		else:
-			self.loggerError.error("aliuserauth verify failed | " + str(userInfo["result"]) + " | " + json.dumps(userInfo, ensure_ascii = False))
-			self.setResult("aliuserauth verify failed", INTERNAL_ERROR, userInfo)
+			_self.loggerError.error("aliuserauth verify failed | " + str(userInfo["result"]) + " | " + json.dumps(userInfo, ensure_ascii = False))
+			_self.setResult("aliuserauth verify failed", INTERNAL_ERROR, userInfo)
+
+	def delegate(self):
+		if self.op == PAYMENT_GLOBAL_CONFIG["APP_AUTH_NOTIFY"]:
+			self.__process_app_auth(self._self)
+		elif self.op == PAYMENT_GLOBAL_CONFIG["USER_AUTH_NOTIFY"]:
+			self.__process_user_auth(self._self)
+		else:
+			self._self.resultBody = "Illegal Op field."
+
+class AliPaymentUserAuthFailureDelegate(BaseDelegate):
+	def __init__(self, op, _self, db):
+		super(AliPaymentUserAuthFailureDelegate, self).__init__(op, db)
+		self._self = _self
+
+	def delegate(self):
+		pass
+
+# 支付宝，授权类接口回调
+class AliFetchUserInfoController(BaseController):
+	@service("AliService", "aliService")
+	def execute(self):
+		op = self.getStrArg("op")
+		commonDelegate = AliPaymentUserAuthDelegate(op, self, self.db)
+		failureDelegate = AliPaymentUserAuthFailureDelegate(op, self, self.db)
+
+		commonDelegate.delegate()
 
 # 支付宝，获取用户芝麻分
 class AliFetchUserZhimaInfoController(BaseController):
 	@checklogin()
-	@queryparam("refresh", "string", False, "N")
+	@queryparam("refresh", "string", False, "AUTO")
 	@service("AliService", "aliService")
 	def execute(self):
 		sql("""
@@ -215,6 +246,19 @@ class AliFetchUserZhimaInfoController(BaseController):
 				self.loggerError.error("alizhima verify failed | " + str(zhimaInfo["result"]) + " | " + json.dumps(zhimaInfo, ensure_ascii = False))
 				self.setResult(-1, INTERNAL_ERROR, zhimaInfo)
 		return -1
+
+# 查看用户是否已经绑定支付宝账号
+class CheckUserAliBindingController(BaseController):
+	@checklogin()
+	def execute(self):
+		sql("""
+				select-one alipay_user_id, alipay_user_access_token, alipay_zhima_score from user_info where id=%s
+			""", (self.userId))(None)(self)
+		ali_user_id = self.sqlResult["alipay_user_id"]
+		if ali_user_id is None:
+			return -1
+		else:
+			return 1
 
 # 支付宝，企业转账
 class AliEnterpriseTransferController(BaseController):
