@@ -25,10 +25,11 @@ class CreatePreOrderController(BaseController):
 class GetPreOrderPaymentUrlController(BaseController):
 	@checklogin()
 	@queryparam("pre_order_id", "string")
+	@queryparam("return_url", "string")
 	def execute(self):
-		return_url = "/file/data/index.html" # just for test
+		return_url = self.return_url
 		notify_url = PAYMENT_GLOBAL_CONFIG["NOTIFY_MID_PATH"] + PAYMENT_GLOBAL_CONFIG["PRE_ORDER_PAYMENT"]
-		innerhttp("PaymentController.AliPaymentUrlController", {"out_trade_no": "self.pre_order_id", "total_fee": 0.01, "body_desc": "pre order fee", "subject_title": "信息费", "return_url": return_url, "notify_url": notify_url}, headers = {TOKEN_NAME: "self.token_original"})(None)(self)
+		innerhttp("PaymentController.AliPaymentUrlController", {"out_trade_no": str(self.pre_order_id) + "1", "total_fee": 0.01, "body_desc": "pre order fee", "subject_title": "信息费", "return_url": return_url, "notify_url": notify_url}, headers = {TOKEN_NAME: "self.token_original"})(None)(self)
 		return self.controller_bucket["AliPaymentUrlController"].jsonobj
 
 @six.add_metaclass(abc.ABCMeta)

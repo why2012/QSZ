@@ -536,6 +536,13 @@ token
 参数
 ```
 pre_order_id: 看房申请id
+return_url: 支付成功或失败后，把结果带给前端, url是包括域名完整链接,例如http://domain/
+# 返回携带以下参数
+#示例1: http://domain/?total_amount=0.01&timestamp=2011-11-11+23%3A11%3A46&sign=&trade_no=&sign_type=RSA2&auth_app_id=&charset=utf-8&seller_id=&method=alipay.trade.wap.pay.return&app_id=&out_trade_no=71&version=1.0
+
+#示例2: https://m.alipay.com/Gk8NF23?total_amount=9.00&timestamp=2016-08-11+19%3A36%3A01&sign=ErCRRVmW%2FvXu1XO76k%2BUr4gYKC5%2FWgZGSo%2FR7nbL%2FPU7yFXtQJ2CjYPcqumxcYYB5x%2FzaRJXWBLN3jJXr01Icph8AZGEmwNuzvfezRoWny6%2Fm0iVQf7hfgn66z2yRfXtRSqtSTQWhjMa5YXE7MBMKFruIclYVTlfWDN30Cw7k%2Fk%3D&trade_no=2016081121001004630200142207&sign_type=RSA2&charset=UTF-8&seller_id=2088111111116894&method=alipay.trade.wap.pay.return&app_id=2016040501024706&out_trade_no=70501111111S001111119&version=1.0
+
+#文档参考: https://docs.open.alipay.com/203/107090
 ```
 
 HTTP HEADER
@@ -580,6 +587,31 @@ token
         "auth_url": "https://openauth.alipay.com/oauth2/publicAppAuthorize.htm?scope=auth_user&state=adf598e6c57dc973a85e733e880414eb&redirect_uri=http%3A%2F%2F119.29.113.28%3A20001%2Fpayment%2Fali%2Fauth_notify&domain_url=https%3A%2F%2Fopenauth.alipay.com%2Foauth2%2FpublicAppAuthorize.htm&app_id=2017081408197189",
         "result": "SUCCESS"
     }
+}
+```
+
+### 查看用户是否已经绑定支付宝账号
+地址: /payment/ali/binding_status
+
+方法: post
+
+如果没有绑定，需要调用用户授权接口
+
+参数
+```
+```
+
+HTTP HEADER
+```
+token
+```
+
+返回
+```
+{
+    "status": 0,
+    "msg": "",
+    "ans": 1 # or -1
 }
 ```
 

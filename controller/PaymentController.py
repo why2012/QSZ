@@ -247,6 +247,19 @@ class AliFetchUserZhimaInfoController(BaseController):
 				self.setResult(-1, INTERNAL_ERROR, zhimaInfo)
 		return -1
 
+# 查看用户是否已经绑定支付宝账号
+class CheckUserAliBindingController(BaseController):
+	@checklogin()
+	def execute(self):
+		sql("""
+				select-one alipay_user_id, alipay_user_access_token, alipay_zhima_score from user_info where id=%s
+			""", (self.userId))(None)(self)
+		ali_user_id = self.sqlResult["alipay_user_id"]
+		if ali_user_id is None:
+			return -1
+		else:
+			return 1
+
 # 支付宝，企业转账
 class AliEnterpriseTransferController(BaseController):
 	@checklogin()

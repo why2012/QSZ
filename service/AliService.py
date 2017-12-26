@@ -221,7 +221,10 @@ class AliService(BaseService):
 		return app_auth_token
 
 	def refreshAppAuthToken(self, refresh_token):
-		response = requests.get("alipay.open.auth.token.app", {"grant_type": "refresh_token", "refresh_token": refresh_token})
+		# todo: refresh app token
+		# 根本就不需要app auth token，第三方开发者给商户提供支付功能时用的
+		url = ""
+		response = requests.get(url)
 		responseObj = response.json()
 		authObj = {}
 		authObj["app_auth_token"] = responseObj["alipay_open_auth_token_app_response"]["app_auth_token"]
