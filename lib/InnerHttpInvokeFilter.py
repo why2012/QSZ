@@ -60,7 +60,7 @@ def innerhttp(_conrtollername, queryparams = {}, postparams = {}, headers = {}, 
 			else:
 				webApplication = UtilConfig.get("WebApplication")
 
-			httpcontr = contr(webApplication, httpRequest)
+			httpcontr = contr(webApplication, httpRequest, requestId = self.requestId)
 
 			bucket = getattr(self, conrtollerbucket, None)
 			if bucket == None or type(bucket) != "dict":

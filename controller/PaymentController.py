@@ -154,6 +154,7 @@ class AliPaymentUserAuthDelegate(BaseDelegate):
 	def __process_user_auth(self, _self):
 		# get auth code in call back data
 		fetchUserInfoObj = _self.aliService.constructFetchUserInfoObj(_self)
+		print(fetchUserInfoObj)
 		# get access token
 		userInfo = _self.aliService.fetchUserInfo(AliPayment, fetchUserInfoObj)
 		if userInfo["result"]:
@@ -181,6 +182,7 @@ class AliPaymentUserAuthDelegate(BaseDelegate):
 				sql("""
 					update user_info set alipay_user_id=%s, alipay_user_access_token=%s where id=%s
 				""", (ali_user_id, access_token, userId))(None)(_self)
+				_self.resultBody = "success"
 			else:
 				_self.loggerError.error("aliuserauth verify failed | " + str(userInfo["result"]) + " | " + state + " | " + userInfo["state"])
 		else:

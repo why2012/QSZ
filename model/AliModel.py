@@ -1,5 +1,6 @@
 # coding: utf-8
 from model.BaseModel import *
+import time
 
 class AliModel(BaseModel):
 	def __init__(self, db, cursor):

@@ -27,7 +27,6 @@ class MerchantAuthGrantGetAuthCodeUrlController(BaseController):
 
 # auth code 回调
 class MerchantAuthGrantReturnAuthCodeUrlController(BaseController):
-	@service("AliService", "aliService")
 	def execute(self):
 		app_auth_code = self.getStrArg("app_auth_code")
 		app_id = self.getStrArg("app_id")

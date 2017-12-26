@@ -7,6 +7,7 @@ import json
 import logging
 import traceback
 import sys
+import random
 from util.ErrorCode import *
 from lib.LoggerFilters import *
 from conf.Config import *
@@ -16,15 +17,20 @@ import MySQLdb as mysql
 from lib import *
 
 class BaseController(web.RequestHandler):
+	def __init__(self, application, request, requestId = None, **kwargs):
+		self.requestId = requestId
+		super(BaseController, self).__init__(application, request, **kwargs)
+
 	def initialize(self):
 		try:
 			self.logger = logging.getLogger("controllerInfoDebug")
 			self.loggerWaning = logging.getLogger("controllerWarning")
 			self.loggerError = logging.getLogger("controllerError")
-
-			self.logger.addFilter(InfoDebugFilter())
-			self.loggerWaning.addFilter(WarngingFilter())
-			self.loggerError.addFilter(ErrorFilter())
+			if self.requestId is None:
+				self.requestId = int(random.random() * 1000000000000000)
+			self.logger.addFilter(InfoDebugFilter(self.requestId))
+			self.loggerWaning.addFilter(WarngingFilter(self.requestId))
+			self.loggerError.addFilter(ErrorFilter(self.requestId))
 			self.__argsNameMapper = {}
 			self.__args = {}
 
@@ -59,14 +65,15 @@ class BaseController(web.RequestHandler):
 			self.setResult(status = e.getCode(), msg = e.getMsg())
 		except ErrorStatusException as e:
 			self.setResult(status = e.getCode(), msg = e.getMsg())
-			self.loggerWaning.warn(self.oneLine(str(self.getAllArgs()) + "; " + e.getMsg() + "\n" + traceback.format_exc()))
+			self.loggerWaning.warn("HttpArgs:---" + self.oneLine(str(self.getAllArgs()) + "---; " + e.getMsg() + "\n" + traceback.format_exc()))
 		except Exception as e:
 			if len(e.args) == 2 and isinstance(e.args[1], int):
 				self.setResult(status = e.args[1], msg = str(e.args[0]))
 			else:
-				# self.setResult(status = INTERNAL_ERROR, msg = "Internal Error: " + repr(type(e)) + ", " + str(e))
+				if DEV:
+					print(traceback.format_exc())
 				self.setResult(status = INTERNAL_ERROR, msg = str(e))
-				self.loggerError.error(self.oneLine(str(self.getAllArgs()) + "; " + str(e) + "\n" + traceback.format_exc()))
+				self.loggerError.error("HttpArgs:---" + self.oneLine(str(self.getAllArgs()) + "---; " + str(e) + "\n" + traceback.format_exc()))
 		finally:
 			if self.db:
 				self.db.close()
@@ -75,7 +82,7 @@ class BaseController(web.RequestHandler):
 			if self.result is not None:
 				self.set_header('Content-Type', 'application/json')
 				self.jsonWrite(self.result)
-				self.logger.info(self.oneLine(str(self.getAllArgs())) + "; " + json.dumps(self.result, ensure_ascii = False))
+				self.logger.info("HttpArgs:---" + self.oneLine(str(self.getAllArgs())) + "---; " + json.dumps(self.result, ensure_ascii = False))
 			if self.result is None and hasattr(self, "resultBody") and self.resultBody is not None:
 				self.rawTextWrite(self.resultBody)
 				self.logger.info(self.resultBody)

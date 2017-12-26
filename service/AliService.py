@@ -215,7 +215,7 @@ class AliService(BaseService):
 	def getAppAuthToken(self):
 		app_auth_token, is_expired, refresh_token, re_expire_in = self.aliModel.getAppToken()
 		if app_auth_token == 0:
-			app_auth_token = self.getAppAuthToken()
+			app_auth_token = self.getAppAuthTokenCached()
 		elif is_expired:
 			app_auth_token = self.refreshAppAuthToken(refresh_token)
 		return app_auth_token
@@ -236,7 +236,7 @@ class AliService(BaseService):
 		return authObj["app_auth_token"]
 
 	# 为避免获取app_auth_code，此处直接读取配置信息
-	def getAppAuthToken(self):
+	def getAppAuthTokenCached(self):
 		return AliPayment["app_startup_auth_token"]
 
 	# 回调，获取用户信息 obj
@@ -263,7 +263,8 @@ class AliService(BaseService):
 		requestObj["version"] = configObj["userauth"]["version"]
 		requestObj["app_auth_token"] = userInfoObj["app_auth_token"]
 
-		requestObj["biz_content"] = '{"grant_type":"%s","code":"%s"}' % (configObj["userauth"]["grant_type"], userInfoObj["auth_code"], )
+		requestObj["grant_type"] = configObj["userauth"]["grant_type"]
+		requestObj["code"] = userInfoObj["auth_code"]
 
 		requestObj["sign"] = AliParamEncrypt(requestObj, configObj["secret_key"])
 		url = url_domain + "?" + urlencode(requestObj)

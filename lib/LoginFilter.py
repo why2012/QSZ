@@ -32,7 +32,6 @@ def checklogin(enbale_check = True):
 					else:
 						warnLoginOut(self)
 				except Exception as e:
-					print(traceback.format_exc())
 					raise e
 			else:
 				_fresult = op(self, *args, **kwargs)
