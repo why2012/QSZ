@@ -75,7 +75,6 @@ class MerchantAuthGrantReturnAuthCodeUrlController(BaseController):
 				self.loggerError.error("Callback get app auth token failed." + response.content)
 		except:
 			self.loggerError.error("Callback get app auth token failed.Error occured. " + response.content)
-		return url
 
 
 
