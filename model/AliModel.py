@@ -24,8 +24,8 @@ class AliModel(BaseModel):
 				return (token, True, refresh_token, re_expire_in)
 
 	def insertAppToken(self, app_token, expire_in, start_date, refresh_token, re_expire_in):
-		value = app_token + "|" + expire_in + "|" + str(start_date)
-		remark = refresh_token + "|" + re_expire_in
+		value = app_token + "|" + str(expire_in) + "|" + str(start_date)
+		remark = refresh_token + "|" + str(re_expire_in)
 		self.cursor.execute("""
 			insert into keyvalue_data(vkey, value, remark) values(%s, %s, %s) ON DUPLICATE KEY UPDATE value=%s, remark=%s
 			""", (AliPayment["app_auth_token_db_key"], value, remark, value, remark))

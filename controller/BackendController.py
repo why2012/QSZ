@@ -73,8 +73,10 @@ class MerchantAuthGrantReturnAuthCodeUrlController(BaseController):
 				self.resultBody = "Token refreshed. " + app_auth_token
 			else:
 				self.loggerError.error("Callback get app auth token failed." + response.content)
-		except:
+		except Exception as e:
 			self.loggerError.error("Callback get app auth token failed.Error occured. " + response.content)
+			self.resultBody = "Token refresh failed. " + response.content
+			raise e
 
 
 
