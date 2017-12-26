@@ -261,8 +261,9 @@ class AliService(BaseService):
 		requestObj["timestamp"] = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 		requestObj["version"] = configObj["userauth"]["version"]
 		requestObj["app_auth_token"] = userInfoObj["app_auth_token"]
-		requestObj["grant_type"] = configObj["userauth"]["grant_type"]
-		requestObj["code"] = userInfoObj["auth_code"]
+		
+		requestObj["biz_content"] = "{'grant_type': '%s', 'code': '%s'}" % (configObj["userauth"]["grant_type"], userInfoObj["auth_code"], )
+
 		requestObj["sign"] = AliParamEncrypt(requestObj, configObj["secret_key"])
 		url = url_domain + "?" + urlencode(requestObj)
 		print("-----fetchUserInfo-----", url)

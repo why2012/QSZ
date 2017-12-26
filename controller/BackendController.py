@@ -46,9 +46,7 @@ class MerchantAuthGrantReturnAuthCodeUrlController(BaseController):
 			"sign_type": AliPayment["sign_type"],
 			"timestamp": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
 			"version": AliPayment["version"],
-			"biz_content": "{'merchant': 1}",
-			"grant_type": "authorization_code",
-			"code": app_auth_code
+			"biz_content": "{'grant_type': ‘authorization_code’, 'code': '%s'}" % (app_auth_code, )
 		}
 		paramObj["sign"] = AliParamEncrypt(paramObj, AliPayment["secret_key"])
 		url += urlencode(paramObj)
