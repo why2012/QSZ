@@ -54,10 +54,10 @@ class MerchantAuthGrantReturnAuthCodeUrlController(BaseController):
 		# 目前的服务器无法直接访问这个https链接，需要设置verify=False, 有待调查解决
 		response = requests.post(url, verify = False)
 		content = response.json()
+		print(content)
 		# https://docs.open.alipay.com/common/105193
 		try:
-			if "alipay_open_auth_token_app_response" in content:
-				content = content["alipay_open_auth_token_app_response"]
+			content = content["alipay_open_auth_token_app_response"]
 			if content["code"] != "10000":
 				content["_msg"] = "Token refresh failed."
 				return content
