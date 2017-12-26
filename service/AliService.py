@@ -208,6 +208,7 @@ class AliService(BaseService):
 	# 引导用户授权url, 获取auth_code
 	def getUserAuthUrl(self, authObj):
 		url_domain = authObj["domain_url"]
+		del authObj["domain_url"]
 		return url_domain + "?" + urlencode(authObj)
 
 	# https://docs.open.alipay.com/common/105193
@@ -261,8 +262,8 @@ class AliService(BaseService):
 		requestObj["timestamp"] = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 		requestObj["version"] = configObj["userauth"]["version"]
 		requestObj["app_auth_token"] = userInfoObj["app_auth_token"]
-		
-		requestObj["biz_content"] = "{'grant_type': '%s', 'code': '%s'}" % (configObj["userauth"]["grant_type"], userInfoObj["auth_code"], )
+
+		requestObj["biz_content"] = '{"grant_type":"%s","code":"%s"}' % (configObj["userauth"]["grant_type"], userInfoObj["auth_code"], )
 
 		requestObj["sign"] = AliParamEncrypt(requestObj, configObj["secret_key"])
 		url = url_domain + "?" + urlencode(requestObj)
