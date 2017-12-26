@@ -32,6 +32,8 @@ TOKEN_HEADER = "QSZ_TOKEN"
 TOKEN_EXPIRE = 3600 * 24 * 5
 TOKEN_NAME = "token"
 
+VERIFY_HTTPS = False
+
 MCH_NAME = "QSZ" # 商户名
 WX_ACCESS_TOKEN_KEY = "wx_access_token"
 WX_APPID = ""

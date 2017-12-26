@@ -17,8 +17,7 @@ import MySQLdb as mysql
 from lib import *
 
 class BaseController(web.RequestHandler):
-	def __init__(self, application, request, requestId = None, **kwargs):
-		self.requestId = requestId
+	def __init__(self, application, request, **kwargs):
 		super(BaseController, self).__init__(application, request, **kwargs)
 
 	def initialize(self):
@@ -26,11 +25,12 @@ class BaseController(web.RequestHandler):
 			self.logger = logging.getLogger("controllerInfoDebug")
 			self.loggerWaning = logging.getLogger("controllerWarning")
 			self.loggerError = logging.getLogger("controllerError")
-			if self.requestId is None:
-				self.requestId = int(random.random() * 1000000000000000)
-			self.logger.addFilter(InfoDebugFilter(self.requestId))
-			self.loggerWaning.addFilter(WarngingFilter(self.requestId))
-			self.loggerError.addFilter(ErrorFilter(self.requestId))
+			self.infoDebugFilter = InfoDebugFilter(1)
+			self.warngingFilter = WarngingFilter(1)
+			self.errorFilter = ErrorFilter(1)
+			self.logger.addFilter(self.infoDebugFilter)
+			self.loggerWaning.addFilter(self.warngingFilter)
+			self.loggerError.addFilter(self.errorFilter)
 			self.__argsNameMapper = {}
 			self.__args = {}
 
@@ -58,6 +58,15 @@ class BaseController(web.RequestHandler):
 		self.invokeExecute(*args)
 
 	def invokeExecute(self, *args):
+		if not hasattr(self, "requestId") or self.requestId is None:
+			self.requestId = int(random.random() * 1000000000000000)
+		self.infoDebugFilter.setRequestId(self.requestId)
+		self.warngingFilter.setRequestId(self.requestId)
+		self.errorFilter.setRequestId(self.requestId)
+		self.logger.filters = [self.infoDebugFilter]
+		self.loggerWaning.filters = [self.warngingFilter]
+		self.loggerError.filters = [self.errorFilter]
+
 		try:
 			jsonobj = self.execute(*args)
 			self.jsonobj = jsonobj
@@ -86,6 +95,7 @@ class BaseController(web.RequestHandler):
 			if self.result is None and hasattr(self, "resultBody") and self.resultBody is not None:
 				self.rawTextWrite(self.resultBody)
 				self.logger.info(self.resultBody)
+			self.requestId = None
 
 	def execute(self):
 		pass

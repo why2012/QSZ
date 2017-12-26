@@ -60,12 +60,13 @@ def innerhttp(_conrtollername, queryparams = {}, postparams = {}, headers = {}, 
 			else:
 				webApplication = UtilConfig.get("WebApplication")
 
-			httpcontr = contr(webApplication, httpRequest, requestId = self.requestId)
+			httpcontr = contr(webApplication, httpRequest)
 
 			bucket = getattr(self, conrtollerbucket, None)
 			if bucket == None or type(bucket) != "dict":
 				setattr(self, conrtollerbucket, {})
 			bucket = getattr(self, conrtollerbucket)
+			httpcontr.requestId = self.requestId
 			httpcontr.invokeExecute()
 			bucket[conrtollername] = httpcontr
 

@@ -3,6 +3,9 @@ import logging
 
 class BaseFilter(logging.Filter):
 	def __init__(self, requestId):
+		self.requestId = str(requestId)
+
+	def setRequestId(self, requestId):
 		self.requestId = requestId
 
 	def getRequestId(self):

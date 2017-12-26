@@ -51,7 +51,7 @@ class MerchantAuthGrantReturnAuthCodeUrlController(BaseController):
 		url += urlencode(paramObj)
 		print("-----", url)
 		# 目前的服务器无法直接访问这个https链接，需要设置verify=False, 有待调查解决
-		response = requests.post(url, verify = False)
+		response = requests.post(url, verify = VERIFY_HTTPS)
 		content = response.json()
 		print(content)
 		# https://docs.open.alipay.com/common/105193

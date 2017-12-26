@@ -135,7 +135,6 @@ class AliUserInfoAuthUrlController(BaseController):
 	def execute(self):
 		authObj = self.aliService.constructUserAuthObj(AliPayment, "/payment/ali/auth_notify?op=" + PAYMENT_GLOBAL_CONFIG["USER_AUTH_NOTIFY"], self.userId)
 		state = authObj["state"]
-		print("-----", state)
 		sql("""
 				update user_info set alipay_user_auth_state=%s where id=%s
 			""", (state, "self.userId"))(None)(self)
@@ -157,6 +156,7 @@ class AliPaymentUserAuthDelegate(BaseDelegate):
 		print(fetchUserInfoObj)
 		# get access token
 		userInfo = _self.aliService.fetchUserInfo(AliPayment, fetchUserInfoObj)
+		print("-----user-code---", userInfo)
 		if userInfo["result"]:
 			state = userInfo["state"]
 			aes = AES(AES_KEY)
@@ -218,7 +218,7 @@ class AliFetchUserInfoController(BaseController):
 # 支付宝，获取用户芝麻分
 class AliFetchUserZhimaInfoController(BaseController):
 	@checklogin()
-	@queryparam("refresh", "string", False, "N")
+	@queryparam("refresh", "string", False, "AUTO")
 	@service("AliService", "aliService")
 	def execute(self):
 		sql("""

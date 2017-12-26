@@ -248,7 +248,7 @@ class AliService(BaseService):
 		notifyObj["error_scope"] = baseController.getStrArg("error_scope")
 		notifyObj["state"] = baseController.getStrArg("state")
 		notifyObj["auth_code"] = baseController.getStrArg("auth_code")
-		notifyObj["app_auth_token"] = self.getAppAuthToken()
+		# notifyObj["app_auth_token"] = self.getAppAuthToken()
 		return notifyObj
 
 	# 获取用户信息, https://docs.open.alipay.com/api_9/alipay.system.oauth.token
@@ -261,7 +261,7 @@ class AliService(BaseService):
 		requestObj["sign_type"] = configObj["userauth"]["sign_type"]
 		requestObj["timestamp"] = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 		requestObj["version"] = configObj["userauth"]["version"]
-		requestObj["app_auth_token"] = userInfoObj["app_auth_token"]
+		# requestObj["app_auth_token"] = userInfoObj["app_auth_token"]
 
 		requestObj["grant_type"] = configObj["userauth"]["grant_type"]
 		requestObj["code"] = userInfoObj["auth_code"]
@@ -270,7 +270,7 @@ class AliService(BaseService):
 		url = url_domain + "?" + urlencode(requestObj)
 		print("-----fetchUserInfo-----", url)
 		# 目前的服务器无法直接访问这个https链接，需要设置verify=False, 有待调查解决
-		response = requests.get(url, verify = False)
+		response = requests.get(url, verify = VERIFY_HTTPS)
 		responseObj = response.json()
 		transacObj = {}
 		if "alipay_system_oauth_token_response" not in responseObj:
@@ -315,19 +315,18 @@ class AliService(BaseService):
 		requestObj["sign_type"] = configObj["zhima"]["sign_type"]
 		requestObj["timestamp"] = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 		requestObj["version"] = configObj["zhima"]["version"]
-		requestObj["app_auth_token"] = self.getAppAuthToken()
+		# requestObj["app_auth_token"] = self.getAppAuthToken()
 		requestObj["auth_token"] = authToken
 		requestObj["format"] = configObj["format"]
-		requestObj["biz_content"] = "{'zhima':1}"
-
-		requestObj["transaction_id"] = ""
-		requestObj["product_code"] = "w1010100100000000001"
+		transaction_id = time.strftime("%Y%m%d", time.localtime())
+		transaction_id += ("".join([str(i) for i in range(50)]))[:64 - len(transaction_id)]
+		requestObj["biz_content"] = '{"product_code":"w1010100100000000001","transaction_id":"%s"}' % (transaction_id,)
 
 		requestObj["sign"] = AliParamEncrypt(requestObj, configObj["secret_key"])
 		url = url_domain + "?" + urlencode(requestObj)
 		print("-----fetchUserInfo-----", url)
 		# 目前的服务器无法直接访问这个https链接，需要设置verify=False, 有待调查解决
-		response = requests.get(url, verify = False)
+		response = requests.get(url, verify = VERIFY_HTTPS)
 		responseObj = response.json()
 		if "zhima_credit_score_get_response" not in responseObj:
 			responseObj["zhima_credit_score_get_response"] = {}
