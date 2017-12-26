@@ -642,3 +642,32 @@ token
     "ans": "750"
 }
 ```
+
+### 支付宝企业向个人转账(内部接口，不开放)
+地址: /payment/ali/pay_to_customer
+
+方法: post
+
+参数
+```
+order_id: string # 订单id
+payee_type: string # 账户类型，1、ALIPAY_USERID：支付宝账号对应的支付宝唯一用户号。以2088开头的16位纯数字组成。 2、ALIPAY_LOGONID：支付宝登录号，支持邮箱和手机号格式。
+payee_acount: string # 账户
+amount: float # 金额, 最小金额0.1
+[remark]: string # 备注
+```
+
+HTTP HEADER
+```
+token
+```
+
+返回
+```
+
+{
+    "status": 0,
+    "msg": "",
+    "ans": "750"
+}
+```

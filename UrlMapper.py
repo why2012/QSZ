@@ -11,6 +11,7 @@ from controller.PaymentController import AliUserInfoAuthUrlController
 from controller.PaymentController import AliFetchUserInfoController
 from controller.PaymentController import AliFetchUserZhimaInfoController
 from controller.PaymentController import CheckUserAliBindingController
+from controller.PaymentController import AliEnterpriseTransferController
 from controller.BackendController import *
 
 class UrlMapper(object):
@@ -52,6 +53,7 @@ class UrlMapper(object):
 			(r"/payment/ali/get_auth_url", AliUserInfoAuthUrlController), # 获取支付宝引导用户授权url
 			(r"/payment/ali/auth_notify", AliFetchUserInfoController), # 用户授权回调
 			(r"/payment/ali/binding_status", CheckUserAliBindingController), # 查看用户是否已经绑定支付宝账号
+			# (r"/payment/ali/pay_to_customer", AliEnterpriseTransferController), # 企业向个人转账
 
 			(r"/payment/ali/zhima", AliFetchUserZhimaInfoController), # 获取用户芝麻分
 
