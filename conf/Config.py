@@ -24,7 +24,7 @@ PAYMENT_GLOBAL_CONFIG = {
 	"NOTIFY_MID_PATH": "/payment/ali/nontify/",
 	"PRE_ORDER_PAYMENT": "pre_order_payment",
 	"APP_AUTH_NOTIFY": "app_auth_notify",
-	"USER_AUTH_NOTIFY": "user_auth_nnotify",
+	"USER_AUTH_NOTIFY": "user_auth_notify",
 }
 
 AES_KEY = "skitfn,.|1-AJ*2^"

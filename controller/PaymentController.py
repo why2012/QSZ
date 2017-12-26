@@ -133,7 +133,7 @@ class AliUserInfoAuthUrlController(BaseController):
 	@checklogin()
 	@service("AliService", "aliService")
 	def execute(self):
-		authObj = self.aliService.constructUserAuthObj(AliPayment, "/payment/ali/auth_notify/" + PAYMENT_GLOBAL_CONFIG["USER_AUTH_NOTIFY"], self.userId)
+		authObj = self.aliService.constructUserAuthObj(AliPayment, "/payment/ali/auth_notify?op=" + PAYMENT_GLOBAL_CONFIG["USER_AUTH_NOTIFY"], self.userId)
 		state = authObj["state"]
 		print("-----", state)
 		sql("""
@@ -206,7 +206,8 @@ class AliPaymentUserAuthFailureDelegate(BaseDelegate):
 # 支付宝，授权类接口回调
 class AliFetchUserInfoController(BaseController):
 	@service("AliService", "aliService")
-	def execute(self, op):
+	def execute(self):
+		op = self.getStrArg("op")
 		commonDelegate = AliPaymentUserAuthDelegate(op, self, self.db)
 		failureDelegate = AliPaymentUserAuthFailureDelegate(op, self, self.db)
 

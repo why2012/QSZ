@@ -20,7 +20,7 @@ class MerchantAuthGrantGetAuthCodeUrlController(BaseController):
 	def execute(self):
 		params = {
 			"app_id": AliPayment["appid"],
-			"redirect_uri": AliPayment["backend_return_url_domain"] + "/payment/ali/auth_notify/" + PAYMENT_GLOBAL_CONFIG["APP_AUTH_NOTIFY"],
+			"redirect_uri": AliPayment["backend_return_url_domain"] + "/payment/ali/auth_notify?op=" + PAYMENT_GLOBAL_CONFIG["APP_AUTH_NOTIFY"],
 		}
 		print(params)
 		return "https://openauth.alipay.com/oauth2/appToAppAuth.htm" + "?" + urlencode(params)
