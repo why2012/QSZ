@@ -263,24 +263,25 @@ class CheckUserAliBindingController(BaseController):
 # 支付宝，企业转账
 class AliEnterpriseTransferController(BaseController):
 	@checklogin()
+	@queryparam("order_id", "string")
+	@queryparam("payee_type", "string", default = "ALIPAY_USERID")
+	@queryparam("payee_acount","string")
+	@queryparam("amount", "float")
+	@queryparam("remark", "string", default = "请收款")
 	@service("AliService", "aliService")
 	def execute(self):
-		out_trade_no = "" # 订单号
-		payee_type = "ALIPAY_USERID" # 账户类型
-		payee_account = "" # 用户支付宝账户
-		amount = "" # 金额，单位元
-		remark = "" # 转账备注
-		transferObj = self.aliService.constructTransferObj(notifyObj, out_trade_no, payee_type, payee_account, amount, remark)
+		out_trade_no = self.order_id # 订单号
+		payee_type = self.payee_type # 账户类型,ALIPAY_LOGONID
+		payee_account = self.payee_acount # 用户支付宝账户
+		amount = self.amount # 金额，单位元
+		remark = self.remark # 转账备注
+		transferObj = self.aliService.constructTransferObj(AliPayment, out_trade_no, payee_type, payee_account, amount, remark)
 		transacObj = self.aliService.sendFeeTransfer(transferObj)
-		resultObj = {"result": "FAIL"}
 		if transacObj["result"]:
 			# todo: 转账成功， 业务处理
-			resultObj["result"] = "SUCCESS"
+			return "SUCCESS"
 		else:
-			# 转账失败， 业务处理， 日志记录
-			pass
-
-		return resultObj
+			return "FAILED"
 
 # 开发者获取支付宝应用的auth_code和auth_token， 回调
 # https://docs.open.alipay.com/common/105193

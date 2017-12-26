@@ -14,12 +14,12 @@ def queryparam(paramName, ptype = "string", optional = False, default = None):
 					paramValue = self.getStrArg(paramName, default)
 			elif ptype == "int":
 				if default is None:
-					paramValue = self.getIntArg(paramName)
+					paramValue = self.getIntArg(paramName, None)
 				else:
 					paramValue = self.getIntArg(paramName, default)
 			elif ptype == "float":
 				if default is None:
-					paramValue = self.getFloatArg(paramName)
+					paramValue = self.getFloatArg(paramName, None)
 				else:
 					paramValue = self.getFloatArg(paramName, default)
 			elif ptype is None:

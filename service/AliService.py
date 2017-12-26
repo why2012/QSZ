@@ -154,7 +154,7 @@ class AliService(BaseService):
 		biz_content_obj["payee_account"] = payee_account
 		biz_content_obj["amount"] = amount
 		biz_content_obj["remark"] = remark
-		transferObj["biz_content_json"] = json.dumps(biz_content_obj, ensure_ascii = False)
+		transferObj["biz_content"] = json.dumps(biz_content_obj, ensure_ascii = False)
 		transferObj["sign"] = AliParamEncrypt(transferObj, configObj["secret_key"])
 		transferObj["url_domain"] = configObj["transfer"]["domain_url"]
 
@@ -165,8 +165,11 @@ class AliService(BaseService):
 	def sendFeeTransfer(self, transferObj):
 		url_domain = transferObj["url_domain"]
 		del transferObj["url_domain"]
-		response = requests.get(url_domain, params = transferObj)
+		url = url_domain + "?" + urlencode(transferObj)
+		print("-----ali-transfer-to-customer---", url)
+		response = requests.get(url)
 		responseObj = response.json()
+		print("-----ali-transfer-to-customer---", responseObj)
 		transacObj = {}
 		transacObj["sign"] = responseObj["sign"]
 		transacObj["code"] = responseObj["alipay_fund_trans_toaccount_transfer_response"]["code"]

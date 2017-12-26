@@ -4,7 +4,7 @@ AliPayment = {
 	"appid": "",
 	"sellerid": "",
 	"secret_key": "",
-	# 应用公钥, 无作用
+	# 应用公钥, 无作用, 上传蚂蚁金服
 	"public_key": "",
 	"format": "JSON",
 	"charset": "utf-8",
@@ -34,7 +34,7 @@ AliPayment = {
 	},
 	"usercode": {
 		"domain_url": "https://openauth.alipay.com/oauth2/publicAppAuthorize.htm",
-		"scope": "auth_user",
+		"scope": "auth_user", # auth_base， 具体哪一个scope能够获取芝麻分，有待研究
 		"redirect_uri_domain": "",
 		"redirect_uri": ""
 	},
