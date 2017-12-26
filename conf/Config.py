@@ -23,6 +23,8 @@ ConfigSecHelper.start_extract({"WxPayment": WxPayment, "AliPayment": AliPayment,
 PAYMENT_GLOBAL_CONFIG = {
 	"NOTIFY_MID_PATH": "/payment/ali/nontify/",
 	"PRE_ORDER_PAYMENT": "pre_order_payment",
+	"APP_AUTH_NOTIFY": "app_auth_notify",
+	"USER_AUTH_NOTIFY": "user_auth_nnotify",
 }
 
 AES_KEY = "skitfn,.|1-AJ*2^"

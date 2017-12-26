@@ -49,7 +49,7 @@ class UrlMapper(object):
 			(r"/_merchant/get_auth_token_url", MerchantAuthGrantReturnAuthCodeUrlController), # 商户后台，回调，获取app auth token
 
 			(r"/payment/ali/get_auth_url", AliUserInfoAuthUrlController), # 获取支付宝引导用户授权url
-			(r"/payment/ali/auth_notify", AliFetchUserInfoController), # 用户授权回调
+			(r"/payment/ali/auth_notify/(.*)", AliFetchUserInfoController), # 用户授权回调
 
 			(r"/payment/ali/zhima", AliFetchUserZhimaInfoController), # 获取用户芝麻分
 

@@ -76,7 +76,7 @@ class BaseController(web.RequestHandler):
 				self.set_header('Content-Type', 'application/json')
 				self.jsonWrite(self.result)
 				self.logger.info(self.oneLine(str(self.getAllArgs())) + "; " + json.dumps(self.result, ensure_ascii = False))
-			if self.result is None and self.resultBody is not None:
+			if self.result is None and hasattr(self, "resultBody") and self.resultBody is not None:
 				self.rawTextWrite(self.resultBody)
 				self.logger.info(self.resultBody)
 

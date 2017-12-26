@@ -118,13 +118,14 @@ class AliService(BaseService):
 
 	# 验证签名
 	# doc: https://docs.open.alipay.com/203/105286
-	def checkNotifyObj(self, configObj, notifyMap):
+	def checkNotifyObj(self, configObj, notifyMap, paymentCheck = True):
 		result = False;
 		try:
-			if notifyMap["seller_id"] != configObj["sellerid"]:
-				return False
-			if notifyMap["app_id"] != configObj["appid"]:
-				return False 
+			if paymentCheck:
+				if notifyMap["seller_id"] != configObj["sellerid"]:
+					return False
+				if notifyMap["app_id"] != configObj["appid"]:
+					return False 
 			result = AliParamVerify(notifyMap, configObj["payment"]["public_key"])
 		except e:
 			import rsa

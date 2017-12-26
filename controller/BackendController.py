@@ -20,22 +20,27 @@ class MerchantAuthGrantGetAuthCodeUrlController(BaseController):
 	def execute(self):
 		params = {
 			"app_id": AliPayment["appid"],
-			"redirect_uri": AliPayment["backend_return_url_domain"] + "/_merchant/get_auth_token_url",
+			"redirect_uri": AliPayment["backend_return_url_domain"] + "/payment/ali/auth_notify/" + PAYMENT_GLOBAL_CONFIG["APP_AUTH_NOTIFY"],
 		}
+		print(params)
 		return "https://openauth.alipay.com/oauth2/appToAppAuth.htm" + "?" + urlencode(params)
 
 # auth code 回调
 class MerchantAuthGrantReturnAuthCodeUrlController(BaseController):
+	@service("AliService", "aliService")
 	def execute(self):
 		app_auth_code = self.getStrArg("app_auth_code")
 		app_id = self.getStrArg("app_id")
 		if app_id != AliPayment["appid"]:
-			self.resultBody = "app_id check failed." + appid
+			self.resultBody = "app_id check failed." + app_id
+			return
+		if app_auth_code == "":
+			self.resultBody = "app_auth_code check failed." + app_auth_code
 			return
 		url = "https://openapi.alipay.com/gateway.do?"
 		paramObj = {
 			"app_id": AliPayment["appid"],
-			"method": alipay.open.auth.token.app,
+			"method": "alipay.open.auth.token.app",
 			"format": AliPayment["format"],
 			"charset": AliPayment["charset"],
 			"sign_type": AliPayment["sign_type"],
@@ -48,21 +53,33 @@ class MerchantAuthGrantReturnAuthCodeUrlController(BaseController):
 		paramObj["sign"] = AliParamEncrypt(paramObj, AliPayment["secret_key"])
 		url += urlencode(paramObj)
 		print(url)
-		response = requests.post(url)
+		# 目前的服务器无法直接访问这个https链接，需要设置verify=False, 有待调查解决
+		response = requests.post(url, verify = False)
 		content = response.json()
 		# https://docs.open.alipay.com/common/105193
-		app_auth_token = content["app_auth_token"]
-		user_id = content["user_id"]
-		auth_app_id = content["auth_app_id"]
-		expires_in = content["expires_in"]
-		re_expires_in = content["re_expires_in"]
-		app_refresh_token = content["app_refresh_token"]
-		aliModel = AliModel(self.db, self.cursor)
-		aliModel.insertAppToken(app_auth_token, expires_in, int(time.time()), app_refresh_token, re_expires_in)
-		# sql("""insert into keyvalue_data(vkey, value) values(%s, %s) 
-		# 		ON DUPLICATE KEY UPDATE 
-		# 		set vkey=%s, value=%s
-		# 	""", (ALI_APP_AUTH_TOKEN_NAME, app_auth_token, ALI_APP_AUTH_TOKEN_NAME, app_auth_token))(None)(self)
+		try:
+			content = content["alipay_open_auth_token_app_response"]
+			if content["code"] != 10000:
+				content["_msg"] = "Token refresh failed."
+				return content
+			app_auth_token = content["app_auth_token"]
+			user_id = content["user_id"]
+			auth_app_id = content["auth_app_id"]
+			expires_in = content["expires_in"]
+			re_expires_in = content["re_expires_in"]
+			app_refresh_token = content["app_refresh_token"]
+			if app_auth_token is not None and app_auth_token.strip() != "":
+				aliModel = AliModel(self.db, self.cursor)
+				aliModel.insertAppToken(app_auth_token, expires_in, int(time.time()), app_refresh_token, re_expires_in)
+				self.resultBody = "Token refreshed. " + app_auth_token
+				# sql("""insert into keyvalue_data(vkey, value) values(%s, %s) 
+				# 		ON DUPLICATE KEY UPDATE 
+				# 		set vkey=%s, value=%s
+				# 	""", (ALI_APP_AUTH_TOKEN_NAME, app_auth_token, ALI_APP_AUTH_TOKEN_NAME, app_auth_token))(None)(self)
+			else:
+				self.loggerError.error("Callback get app auth token failed." + response.content)
+		finally:
+			self.loggerError.error("Callback get app auth token failed.Error occured. " + response.content)
 		return url
 
 
