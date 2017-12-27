@@ -34,7 +34,7 @@ AliPayment = {
 	},
 	"usercode": {
 		"domain_url": "https://openauth.alipay.com/oauth2/publicAppAuthorize.htm",
-		"scope": "auth_user", # auth_base， 具体哪一个scope能够获取芝麻分，有待研究
+		"scope": "auth_zhima", # auth_user auth_base， 具体哪一个scope能够获取芝麻分，有待研究
 		"redirect_uri_domain": "",
 		"redirect_uri": ""
 	},

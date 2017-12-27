@@ -240,7 +240,7 @@ class AliFetchUserZhimaInfoController(BaseController):
 				self.logger.info("alizhima verify ok. " + zhima_score)
 				sql("""
 						update user_info set alipay_zhima_score=%s where id=%s
-					""", (zhima_score, userId))(None)(self)
+					""", (zhima_score, self.userId))(None)(self)
 				return zhima_score
 			else:
 				self.loggerError.error("alizhima verify failed | " + str(zhimaInfo["result"]) + " | " + json.dumps(zhimaInfo, ensure_ascii = False))
