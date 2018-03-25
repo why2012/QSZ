@@ -138,6 +138,18 @@ class BaseController(web.RequestHandler):
 		elif raiseException:
 			raise ErrorStatusException(name + " must not be None", STATUS_PARAM_ERROR)
 
+	def getUpFileNames(self, name = "file", raiseException = True):
+		name = self.__getArgName(name)
+		if name in self.request.files:
+			fileMetas = self.request.files[name]
+			fileNameList = []
+			if fileMetas:
+				for meta in fileMetas:
+					fileNameList.append(meta['filename'])
+			return fileNameList
+		elif raiseException:
+			raise ErrorStatusException(name + " must not be None", STATUS_PARAM_ERROR)
+
 	def processUpFile(self, name = "file", raiseException = True):
 		name = self.__getArgName(name)
 		if name in self.request.files:
@@ -145,6 +157,18 @@ class BaseController(web.RequestHandler):
 			if fileMetas:
 				for meta in fileMetas:
 					return meta['body']
+		elif raiseException:
+			raise ErrorStatusException(name + " must not be None", STATUS_PARAM_ERROR)
+
+	def processUpFiles(self, name = "file", raiseException = True):
+		name = self.__getArgName(name)
+		if name in self.request.files:
+			fileMetas = self.request.files[name]
+			fileBodyList = []
+			if fileMetas:
+				for meta in fileMetas:
+					fileBodyList.append(meta['body'])
+			return fileBodyList
 		elif raiseException:
 			raise ErrorStatusException(name + " must not be None", STATUS_PARAM_ERROR)
 

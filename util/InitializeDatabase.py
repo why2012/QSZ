@@ -85,6 +85,8 @@ CREATE_TABLE_PROPERTY_AUTH = """
 							identity_card_number VARCHAR(25),
 							property_auth_number VARCHAR(100),
 							property_auth_photo_url VARCHAR(150),
+							house_type VARCHAR(20) COMMENT '可选值： 1. 自有房屋出租， 2. 租赁房屋出租',
+							lease_agreement_photo_url VARCHAR(150) COMMENT "租赁合同照片",
 							authentication TINYINT UNSIGNED COMMENT '0 未审核, 1 审核中, 2 审核完成, 3 审核失败',
 
 							PRIMARY KEY (id),
@@ -120,6 +122,17 @@ CREATE_TABLE_HOUSE_INFO = """
 							house_decoration VARCHAR(100) COMMENT '装修程度',
 							house_max_livein TINYINT UNSIGNED COMMENT '最大居住人数',
 							sex_restriction TINYINT UNSIGNED COMMENT '0 无要求, 1 男, 2 女',
+
+							house_rooms INT UNSIGNED COMMENT '卧室数量',
+							subdistrict_code INT UNSIGNED COMMENT '街道',
+							subway_station_code INT UNSIGNED COMMENT '地铁站',
+							house_characteristic TEXT COMMENT '房源特色',
+
+							house_source INT UNSIGNED COMMENT '房源类型',
+							all_floor INT UNSIGNED COMMENT '全部楼层',
+							extra_fee VARCHAR(100) COMMENT '额外费用',
+							release_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '发布时间',
+							submission_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '提交审核时间',
 
 							house_rent INT UNSIGNED COMMENT '租金',
 							payment_type VARCHAR(10) COMMENT '付款方式, 1|3 押一付三, 2|6 押二付六, 1|0 无押金',

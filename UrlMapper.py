@@ -27,6 +27,7 @@ class UrlMapper(object):
 			(r"/house_identification", HouseOwnerIdentification), # 房东身份认证
 
 			(r"/house_create", HouseCreate), # 创建房源
+			(r"/house_release", ReleaseHouse), # 发布房源
 			(r"/my_house_list", MyHouseList), # 房东房源列表
 			(r"/update_house_info", UpdateHouseInfo), # 修改房源信息
 			(r"/pulloff_house", PullOffHouse), # 下架房源
