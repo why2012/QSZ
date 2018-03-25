@@ -14,23 +14,32 @@ class HouseOwnerIdentification(BaseController):
 	# 房产证姓名
 	@queryparam("certname", "string")
 	@queryparam("idcardnumber", "string")
+	# 可选值： 1. 自有房屋出租， 2. 租赁房屋出租
+	@queryparam("house_type", "string", optional = True, default = "")
 	# 房产证号
 	@queryparam("property_cert_number", "string")
 	# @userfile("property_cert_photo", "property_cert_photo", uniqueidname = "[trigger]property_cert_number")
 	@userfile("property_cert_photo", "property_cert_photo", uniqueidname = "property_cert_number")
+	# 租赁合同照片
+	@userfile("lease_agreement_photo_url", "lease_agreement_photo_url", uniqueidname = "property_cert_number")
 	@sql("""
 		insert into property_auth
-		(user_id, name, identity_card_number, property_auth_number, property_auth_photo_url, authentication) 
-		values(%s, %s, %s, %s, %s, %s)
+		(user_id, name, identity_card_number, property_auth_number, property_auth_photo_url, authentication,
+		house_type, lease_agreement_photo_url) 
+		values(%s, %s, %s, %s, %s, %s,
+		%s, %s)
 		ON DUPLICATE KEY UPDATE 
-		name=%s, identity_card_number=%s, property_auth_number=%s, property_auth_photo_url=%s, authentication=%s 
+		name=%s, identity_card_number=%s, property_auth_number=%s, property_auth_photo_url=%s, authentication=%s,
+		house_type=%s, lease_agreement_photo_url=%s
 		""", 
 		("self.userId", "self.certname", "self.idcardnumber", "self.property_cert_number", "self.property_cert_photo", 0,
-		"self.certname", "self.idcardnumber", "self.property_cert_number", "self.property_cert_photo", 0))
+		"self.house_type", "self.lease_agreement_photo_url",
+		"self.certname", "self.idcardnumber", "self.property_cert_number", "self.property_cert_photo", 0,
+		"self.house_type", "self.lease_agreement_photo_url"))
 	def execute(self):
 		# self.property_cert_number = "123456"
 		# self._saveFileFunc(**self._saveFileFuncParams[0])
-		self.setResult([self.certname, self.idcardnumber, self.property_cert_number])
+		self.setResult([self.certname, self.idcardnumber, self.property_cert_number, self.property_cert_photo, self.lease_agreement_photo_url])
 
 # 房东房源列表
 class MyHouseList(BaseController):
@@ -61,17 +70,23 @@ class UpdateHouseInfo(BaseController):
 	def execute(self):
 		self.setResult()
 
-# 添加房源照片，一次一张
+# 添加房源照片，一次一张或多张
 class CreateHousePhoto(BaseController):
 	@checklogin()
 	@queryparam("house_id")
+	@queryparam("rooms_type", "int")
+	@queryparam("rooms_area", "int")
+	@queryparam("rooms_orientation", "string")
 	@invoke("import uuid; self.uuid = str(uuid.uuid1());")
 	#@checkparam("self.uuid", default = str(uuid.uuid1()))
-	@userfile("house_photo", "house_photo", uniqueidname = "uuid")
-	@sql("insert into house_photo(house_id, user_id, photo_url) values(%s, %s, %s)", ("self.house_id", "self.userId", "self.house_photo"))
+	@userfiles("house_photo", "house_photos", uniqueidname = "uuid")
+	@sql("update house_info set house_size=%s, house_type=%s, house_direction=%s where id=%s", ("self.rooms_area", "self.rooms_type", "self.rooms_orientation", "self.house_id"))
 	def execute(self):
-		print(self.uuid)
-		self.setResult({"id": self.lastid, "url": self.house_photo})
+		photo_ids = []
+		for house_photo in self.house_photos:
+			self.sqlServ.SQL("insert into house_photo(house_id, user_id, photo_url) values(%s, %s, %s)", (self.house_id, self.userId, house_photo))
+			photo_ids.append(self.lastid)
+		self.setResult({"id": photo_ids, "url": self.house_photos})
 
 # 修改房源照片，一次一张
 class UpdateHousePhoto(BaseController):
@@ -107,6 +122,14 @@ class UpdateHouseVideo(BaseController):
 	@sql("update house_video set video_clip_url = %s where id = %s", ("self.house_video", "self.video_id"))
 	def execute(self):
 		self.setResult({"url": self.house_video})
+
+# 发布房源
+class ReleaseHouse(BaseController):
+	@checklogin()
+	@queryparam("house_id", "string")
+	@sql("update house_info set status=%s where id = %s and user_id = %s", (1, "self.house_id", "self.userId"))
+	def execute(self):
+		self.setResult()
 
 # 下架房源
 class PullOffHouse(BaseController):
@@ -162,7 +185,7 @@ class HouseCreate(BaseController):
 	@queryparam("house_max_livein", "string", optional = True, default = 0)
 	# 租金
 	@queryparam("house_rent", "string", optional = True, default = 0)
-	# 付款方式, 1|3 押一付三, 2|6 押二付六, 1|0 无押金
+	# 付款方式, 1|1 押一付一, 1|3 押一付三, 1|6 押一付六
 	@queryparam("payment_type", "string", optional = True, default = "1|3")
 	# 物业费, 1 房东, 2 租客, 3 待定
 	@queryparam("property_management_fee", "string", optional = True, default = 0)
@@ -177,20 +200,38 @@ class HouseCreate(BaseController):
 	# 周边情况
 	@queryparam("around_condition", "string", optional = True, default = "")
 	# 房屋设施
-	# 1 空调, 2 暖气, 3 洗衣机, 4 冰箱, 5 允许宠物, 6 电视, 7 浴缸, 8 热水淋浴, 9 门禁系统, 10 有线网络, 11 电梯, 12 无线网络, 13 停车位, 14 饮水机
-	# 1|2|3
+	# 1. 空调， 2. 电视， 3. 洗衣机， 4. 冰箱， 5. 微波炉， 6. 热水淋浴， 7.有线网络， 8. 无线网络， 9. 暖气， 10. 门禁系统， 11. 电梯， 12. 停车位; 1|2|3
 	@queryparam("facility", "string", optional = True, default = "")
+
+	# 卧室数量
+	@queryparam("house_rooms", "int", optional = True, default = -1)
+	# 街道
+	@queryparam("subdistrict_code", "int", optional = True, default = -1)
+	# 地铁站
+	@queryparam("subway_station_code", "int", optional = True, default = -1)
+	# 房源特色
+	@queryparam("house_characteristic", "string", optional = True, default = "")
+	# 房源类型
+	@queryparam("house_source", "int", optional = True, default = -1)
+	# 全部楼层
+	@queryparam("all_floor", "int", optional = True, default = -1)
+	# 额外费用
+	@queryparam("extra_fee", "string", optional = True, default = "")
+
 	@sql(""" 
 		insert ignore into house_info(user_id, province_name, province_code, city_name, city_code, county_name, county_code, district_name, district_code,
 		house_number, longitude, latitude, rent_time_type, rent_room_type, house_size, house_type, house_floor, house_direction, house_decoration, 
 		house_max_livein, house_rent, payment_type, property_management_fee, heating_charge, description_title, description, traffic_condition, 
-		around_condition, status, praise_count)
-		values(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+		around_condition, status, praise_count, house_rooms, subdistrict_code, subway_station_code, house_characteristic,
+		house_source, all_floor, extra_fee)
+		values(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
 		""", ("self.userId", "self.province_name", "self.province_code", "self.city_name", "self.city_code", "self.county_name", "self.county_code",
 			"self.district_name", "self.district_code", "self.house_number", "self.longitude", "self.latitude", "self.rent_time_type",
 			"self.rent_room_type", "self.house_size", "self.house_type", "self.house_floor", "self.house_direction", "self.house_decoration",
 			"self.house_max_livein", "self.house_rent", "self.payment_type", "self.property_management_fee", "self.heating_charge",
-			"self.description_title", "self.description", "self.traffic_condition", "self.around_condition", 0, 0), holdon = True)
+			"self.description_title", "self.description", "self.traffic_condition", "self.around_condition", 0, 0, 
+			"self.house_rooms", "self.subdistrict_code", "self.subway_station_code", "self.house_characteristic",
+			"self.house_source", "self.all_floor", "self.extra_fee"), holdon = True)
 	@invoke("""
 		facilityList = self.facility.strip().split("|")
 		self.house_id = self.lastid

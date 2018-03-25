@@ -102,6 +102,8 @@ certname: string # 房产证姓名
 idcardnumber: string
 property_cert_number: string # 房产证号
 property_cert_photo: file # 房产证照片
+[house_type: string] # 可选值： 1. 自有房屋出租， 2. 租赁房屋出租
+lease_agreement_photo_url: file # 租赁合同照片
 ```
 
 HTTP HEADER
@@ -113,9 +115,15 @@ token
 ```
 
 {
-  "status": 0,
-  "msg": "",
-  "ans": {}
+    "status": 0,
+    "msg": "",
+    "ans": [
+        "房东姓名",
+        "111112222233333", # 身份证号
+        "123213jdsfjf", # 房产证号
+        "data/userphoto/user_6/property_cert_photo-123213jdsfjf.jpg", # 房产证照片
+        "data/userphoto/user_6/lease_agreement_photo_url-123213jdsfjf.jpg" # 租赁合同照片
+    ] 
 }
 ```
 
@@ -151,14 +159,26 @@ token
 [house_decoration: string] # 装修程度
 [house_max_livein: number] # 最大居住人数
 [house_rent: number] # 租金
-[payment_type: string] # 付款方式, 1|3 押一付三, 2|6 押二付六, 1|0 无押金
+[payment_type: string] # 付款方式, 1|1 押一付一, 1|3 押一付三, 1|6 押一付六
 [property_management_fee: number] # 物业费归属, 1 房东, 2 租客, 3 待定
 [heating_charge: number] # 取暖费归属, 1 房东, 2 租客, 3 待定
 [description_title: string] # 介绍标题
 [description: string] # 特色介绍
 [traffic_condition: string] # 交通情况
 [around_condition: string] # 周边情况
-[facility: string] # 房屋设施, 1 空调, 2 暖气, 3 洗衣机, 4 冰箱, 5 允许宠物, 6 电视, 7 浴缸, 8 热水淋浴, 9 门禁系统, 10 有线网络, 11 电梯, 12 无线网络, 13 停车位, 14 饮水机; 1|2|3
+[facility: string] # 房屋设施, 1. 空调， 2. 电视， 3. 洗衣机， 4. 冰箱， 5. 微波炉， 6. 热水淋浴， 7.有线网络， 8. 无线网络， 9. 暖气， 10. 门禁系统， 11. 电梯， 12. 停车位; 1|2|3
+
+[house_rooms: number] # 卧室数量
+[subdistrict_code: number] # 街道
+[subway_station_code: number] # 地铁站
+[house_characteristic: string] # 房源特色
+
+[house_source: number] # 房源类型，1. 房东直租， 2. 二房东合租， 3.租客租期内转租
+[all_floor: number] # 全部楼层
+[earliest_checkin_time: string] # 最早入住时间
+[release_time: string] # 发布时间
+[submission_time: string] # 提交审核时间
+[extra_fee: string] # 额外费用。 1. 水费， 2. 电费， 3. 燃气费， 4. 网费， 5. 取暖费， 6. 卫生费， 7. 电视费， 8. 物业费； 1|2|3
 ```
 
 HTTP HEADER
@@ -174,6 +194,31 @@ token
     "ans": {
         "house_id": 22
     }
+}
+```
+
+### 发布房源
+地址: /house_release
+
+方法: post
+
+参数
+```
+house_id: number
+```
+
+HTTP HEADER
+```
+token
+```
+
+返回
+```
+
+{
+  "status": 0,
+  "msg": "",
+  "ans": {}
 }
 ```
 
@@ -334,7 +379,7 @@ token
 }
 ```
 
-### 添加房源照片，一次一张
+### 添加房源照片，一次一张或多张
 地址: /create_house_photo
 
 方法: post
@@ -343,6 +388,9 @@ token
 ```
 house_id: number
 house_photo: file
+rooms_type: number   # 房间类型： 1. 主卧， 2. 次卧， 3. 客厅， 4. 厨房， 5. 卫生间， 6. 阳台， 7. 其他房间
+rooms_area: number  # 房间的面积，只有主卧、次卧类型的房间有这一字段
+rooms_orientation: string  # 房间的朝向，只有主卧、次卧类型的房间有这一字段，房间内最大采光面即窗户的朝向。
 ```
 
 HTTP HEADER
@@ -354,9 +402,18 @@ token
 ```
 
 {
-  "status": 0,
-  "msg": "",
-  "ans": {"id": 1, "url": ""}
+    "status": 0,
+    "msg": "",
+    "ans": {
+        "url": [
+            "data/userphoto/user_6/house_photos-0-a1055b7a-3003-11e8-81cf-a45e60b7d88f.jpg",
+            "data/userphoto/user_6/house_photos-1-a1055b7a-3003-11e8-81cf-a45e60b7d88f.jpg"
+        ],
+        "id": [
+            10,
+            11
+        ]
+    }
 }
 ```
 
@@ -421,17 +478,23 @@ token
 ```
 [house_name: string] # 房屋介绍标题
 [house_type: string] # 户型
-[house_rent_time_type: number] # 类型，1 短租, 2 长租
-[house_rent_room_type: number] # 类型，1 整租, 2 单间
+[house_rent_time_type: string] # 类型，1 短租, 2 长租
+[house_rent_room_type: number] # 类型，1 整租, 2 单间, e.g., 1   2  1|2
 [house_rent_fee: string] # 租金, 区间形式, [100, 500] [,800] [1000,]
-[house_source: number] # 来源，1 房东, 2 二房东, 3 中介
+[house_source: number] # 来源，1 房东, 2 二房东, 3 中介, e.g., 1   2  1|2  1|2|3
 [house_size: number] # 面积, [20, 50] [,100] [100,]
-[house_direction: string] # 朝向
-[house_decoration: string] # 装修情况
+[house_direction: string] # 朝向, 多个用 | 隔开
+[house_decoration: string] # 装修情况, 多个用 | 隔开
 [radius: number] # 筛选距离半径, km
 [shift: number] # 筛选偏移, 返回[shift:]区间内的查询结果, 默认0
 [count: number] # 筛选数目
 [sort: number] # 排序，1 距离升，2 时间降，3 关注度降，4 租金升， 5 租金降 6 面积升
+
+[house_rooms: string] # 卧室数量, 支持多选. e.g, 1    2    1|3     3|4|5
+[subdistrict_code: number] # 按街道筛选, 单选
+[subway_station_code: number] # 按地铁站筛选,单选
+[house_characteristic: string] # 房源特色, 支持多选, 多个用 | 隔开
+
 longitude: number # 经度
 latitude: number # 纬度
 ```
@@ -445,9 +508,51 @@ token
 ```
 
 {
-  "status": 0,
-  "msg": "",
-  "ans": {}
+    "status": 0,
+    "msg": "",
+    "ans": [
+        {
+            "house_rent": 0,
+            "status": null,
+            "create_date": "2017-21-06",
+            "distance": 8.90555926346204,
+            "house_size": 0,
+            "user_type": 1,
+            "photos": [
+                "data/userphoto/user_6/house_photo-4d4a58e6-3000-11e8-a15e-a45e60b7d88f.jpg",
+                "data/userphoto/user_6/house_photo-e70133dc-5749-11e7-b617-a45e60b7d88f.jpg",
+                "data/userphoto/user_6/house_photo-e70133dc-5749-11e7-b617-a45e60b7d88f.jpg",
+                "data/userphoto/user_6/house_photo-0c11c970-574a-11e7-990f-a45e60b7d88f.jpg",
+                "data/userphoto/user_6/house_photo-0c11c970-574a-11e7-990f-a45e60b7d88f.jpg",
+                "data/userphoto/user_6/house_photo-0c11c970-574a-11e7-990f-a45e60b7d88f.jpg",
+                "data/userphoto/user_6/house_photo-2133324c-574a-11e7-9535-a45e60b7d88f.jpg"
+            ],
+            "duration": 23937811,
+            "payment_type": "1|3",
+            "praise_count": null,
+            "house_type": "0",
+            "house_id": 18
+        },
+        {
+            "house_rent": 0,
+            "status": null,
+            "create_date": "2017-21-06",
+            "distance": 8.90555926346204,
+            "house_size": 90,
+            "user_type": 1,
+            "photos": [
+                "data/userphoto/user_6/house_photos-0-8af48880-3003-11e8-9e95-a45e60b7d88f.jpg",
+                "data/userphoto/user_6/house_photos-1-8af48880-3003-11e8-9e95-a45e60b7d88f.jpg",
+                "data/userphoto/user_6/house_photos-0-a1055b7a-3003-11e8-81cf-a45e60b7d88f.jpg",
+                "data/userphoto/user_6/house_photos-1-a1055b7a-3003-11e8-81cf-a45e60b7d88f.jpg"
+            ],
+            "duration": 23937700,
+            "payment_type": "1|3",
+            "praise_count": null,
+            "house_type": "1",
+            "house_id": 19
+        }
+    ]
 }
 ```
 
