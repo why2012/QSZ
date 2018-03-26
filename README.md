@@ -42,6 +42,49 @@ HTTP HEADER
 }
 ```
 
+### 登录后获取用户信息
+地址: /fetch_userinfo
+
+方法: get
+
+参数
+```
+```
+
+HTTP HEADER
+```
+```
+
+返回
+```
+{
+    "status": 0,
+    "msg": "",
+    "ans": {
+        "qq": "22222",
+        "headimgurl": null,
+        "wx_nickname": "Band",
+        "wx_city": "广州",
+        "virtual_tel_flag": 1,
+        "constellations": "呵呵",
+        "wx_sex": 1,
+        "birthday": "1999-11-11",
+        "wechat": "1111111",
+        "addressProvince": "sichuan",
+        "wx_headimgurl": "data/userphoto/user_6/portrait.jpg",
+        "wx_country": "中国",
+        "id": 6, # user id
+        "addressCity": "chengdu",
+        "occupation": "搬砖工",
+        "virtual_tel": "1111",
+        "education": "小学",
+        "wx_province": "广东",
+        "token": "a703bd25f111842c77b359d49a2fc5414b9036dccb872f04d3359ec677b5c7c1", # 放置于http header中，登陆
+        "wx_openid": "o6_bmjrPTlm6_2sgVt7hMZOPfL2M"
+    }
+}
+```
+
 ### 用户信息录入
 地址: /create_userinfo
 

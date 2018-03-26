@@ -136,6 +136,14 @@ class UserInfoCreate(BaseController):
 			self.sqlServ.SQL(sqlStringPayment, paramsPaymentList)
 		self.setResult()
 
+# 获取用户信息
+class FetchUserInfo(BaseController):
+	@checklogin()
+	@service("UserService", "userService")
+	def execute(self):
+		self.userInfo = self.userService.findUserByUserid(self.userId)
+		self.setResult(self.userInfo)
+
 class WxFetchUserInfo(BaseController):
 	@queryparam("openid", "string")
 	@service("UserService", "userService")
