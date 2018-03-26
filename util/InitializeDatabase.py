@@ -41,6 +41,7 @@ CREATE_TABLE_USER_INFO = """
 							wx_city VARCHAR(100),
 							wx_country VARCHAR(50),
 							wx_headimgurl VARCHAR(150),
+							headimgurl VARCHAR(150),
 							wx_privilege TEXT,
 
 							alipay_province VARCHAR(50) COMMENT '省份名称',
@@ -63,6 +64,19 @@ CREATE_TABLE_USER_INFO = """
 							identity_card_number VARCHAR(25),
 							id_card_photo_front_url VARCHAR(150),
 							id_card_photo_back_url VARCHAR(150),
+
+							addressProvince VARCHAR(100) COMMENT '自填省份',
+							addressCity VARCHAR(100) COMMENT '自填市区',
+							birthday VARCHAR(100) COMMENT '自填生日',
+							constellations VARCHAR(100) COMMENT '自填星座',
+							education VARCHAR(100) COMMENT '自填教育背景',
+							occupation VARCHAR(100) COMMENT '自填职业',
+							tel VARCHAR(100) COMMENT '手机号',
+							virtual_tel_flag TINYINT UNSIGNED COMMENT '是否使用400短号  仅限房东',
+							virtual_tel VARCHAR(100) COMMENT '400短号  仅限房东',
+							wechat VARCHAR(100) COMMENT '微信号',
+							qq VARCHAR(100) COMMENT 'QQ号',
+
 
 							zm_score INT DEFAULT -1 COMMENT '芝麻分',
 
@@ -190,10 +204,13 @@ CREATE_TABLE_PAYMENT = """
 						CREATE TABLE IF NOT EXISTS %s (
 							id BIGINT UNSIGNED AUTO_INCREMENT,
 							user_id INT UNSIGNED NOT NULL,
-							type TINYINT UNSIGNED COMMENT '1 支付宝, 2 微信支付',
+							type TINYINT UNSIGNED COMMENT '1 支付宝, 2 微信支付, 3 银行卡',
 							account VARCHAR(100),
+							account_name VARCHAR(200) COMMENT '收款账户对应姓名',
+							account_idcardnumber VARCHAR(100) COMMENT '收款账户对应身份证号',
 
 							PRIMARY KEY (id),
+							UNIQUE INDEX payment_unique(user_id, type),
 							CONSTRAINT payment_user_info_fk FOREIGN KEY (user_id) REFERENCES %s(id)
 						)ENGINE=InnoDB DEFAULT CHARSET=utf8;
 				""" % (TABLE_PAYMENT, TABLE_USER_INFO)

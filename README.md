@@ -14,20 +14,31 @@ HTTP HEADER
 
 返回
 ```
-
 {
-  "status": 0,
-  "msg": "",
-  "ans": {
-  	"token": 10effdbde7224e80b7d157e9cf8f2fc54888035d1aebfa31347924794353927d, # 放置于http header中，登陆
-    "headimgurl": "http://wx.qlogo.cn/mmopen/g3MonUZtNHkdmzicIlibx6iaFqAc56vxLSUfpb6n5WKSYVY0ChQKkiaJSgQ1dZuTOgvLLrhJbERQQ4eMsv84eavHiaiceqxibJxCfHe/0",
-    "wx_nickname": "Band",
-    "wx_city": "广州",
-    "wx_province": "广东",
-    "wx_sex": 1,
-    "wx_openid": "o6_bmjrPTlm6_2sgVt7hMZOPfL2M",
-    "wx_country": "中国"
-  }
+    "status": 0,
+    "msg": "",
+    "ans": {
+        "qq": "22222",
+        "headimgurl": null,
+        "wx_nickname": "Band",
+        "wx_city": "广州",
+        "virtual_tel_flag": 1,
+        "constellations": "呵呵",
+        "wx_sex": 1,
+        "birthday": "1999-11-11",
+        "wechat": "1111111",
+        "addressProvince": "sichuan",
+        "wx_headimgurl": "data/userphoto/user_6/portrait.jpg",
+        "wx_country": "中国",
+        "id": 6, # user id
+        "addressCity": "chengdu",
+        "occupation": "搬砖工",
+        "virtual_tel": "1111",
+        "education": "小学",
+        "wx_province": "广东",
+        "token": "a703bd25f111842c77b359d49a2fc5414b9036dccb872f04d3359ec677b5c7c1", # 放置于http header中，登陆
+        "wx_openid": "o6_bmjrPTlm6_2sgVt7hMZOPfL2M"
+    }
 }
 ```
 
@@ -43,6 +54,24 @@ sex: number # 性别 1 男， 2 女，0 未知
 user_type: number # 用户类型, 1 房东, 2 二房东, 3 中介
 self_description: string # 介绍
 portrait: file # 头像
+
+addressProvince: string: # 所在地区
+addressCity: string # 所在地区
+birthday: string  #  生日, 格式 0000-00-00
+constellations: string  # 星座
+education: string  #  教育背景。可选值：['博士', '硕士', '本科', '大专', '中专', '高中', '初中']
+occupation: string  #  职业
+
+//  收款账户相关，用户提现时需要用到，包括邀请收入，房租收入，服务费分成。
+[account_name: string] # 收款账户对应姓名
+[account_number: string] # 收款账户账号
+[account_idcardnumber: string] # 收款账户对应身份证号
+//  联系方式
+[tel: string] # 手机号
+[virtual_tel_flag: Boolean] # 是否使用400短号  仅限房东
+[virtual_tel: string] # 400短号  仅限房东
+[wechat: string] # 微信号
+[qq: string] # QQ号
 ```
 
 HTTP HEADER

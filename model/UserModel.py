@@ -11,13 +11,29 @@ class UserModel(BaseModel):
 
 	def findUserByOpenid(self, openid):
 		self.cursor.execute("""select 
-			wx_openid, wx_nickname, wx_sex, wx_country, wx_province, wx_city, wx_headimgurl as headimgurl, id 
+			wx_openid, wx_nickname, wx_sex, wx_country, wx_province, wx_city, wx_headimgurl, id,
+			addressProvince, addressCity, birthday, constellations, education, occupation, virtual_tel_flag,
+			virtual_tel, wechat, qq, headimgurl
 			from user_info where wx_openid=%s limit 1""", (openid,))
 		userInfo = self.cursor.fetchone()
+		userInfoMap = {}
 		if userInfo is not None:
-			userInfo = {"wx_openid": userInfo[0], "wx_nickname": userInfo[1], "wx_sex": userInfo[2], "wx_country": userInfo[3],
-			"wx_province": userInfo[4], "wx_city": userInfo[5], "headimgurl": userInfo[6], "id": userInfo[7]}
-		return userInfo
+			userInfoMap = {"wx_openid": userInfo[0], "wx_nickname": userInfo[1], "wx_sex": userInfo[2], "wx_country": userInfo[3],
+			"wx_province": userInfo[4], "wx_city": userInfo[5], "wx_headimgurl": userInfo[6], "id": userInfo[7]}
+			userInfoMap["addressProvince"] = userInfo[8]
+			userInfoMap["addressCity"] = userInfo[9]
+			userInfoMap["birthday"] = userInfo[10]
+			userInfoMap["constellations"] = userInfo[11]
+			userInfoMap["education"] = userInfo[12]
+			userInfoMap["occupation"] = userInfo[13]
+			userInfoMap["virtual_tel_flag"] = userInfo[14]
+			userInfoMap["virtual_tel"] = userInfo[15]
+			userInfoMap["wechat"] = userInfo[16]
+			userInfoMap["qq"] = userInfo[17]
+			userInfoMap["headimgurl"] = userInfo[18]
+		else:
+			userInfoMap = None
+		return userInfoMap
 
 	def insertUserWxInfo(self, userInfo):
 		self.cursor.execute("""
