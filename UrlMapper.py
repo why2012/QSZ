@@ -22,6 +22,7 @@ class UrlMapper(object):
 			(r"/file/(.*)", FileAccessController),
 
 			(r"/create_userinfo", UserInfoCreate), # 用户信息录入
+			(r"/fetch_userinfo", FetchUserInfo), # 获取用户信息
 			(r"/wx_fetch_userinfo", WxFetchUserInfo), # openid换取用户信息
 			(r"/user_identification", UserRealNameIdentification), # 实名认证
 			(r"/house_identification", HouseOwnerIdentification), # 房东身份认证

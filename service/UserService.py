@@ -12,5 +12,8 @@ class UserService(BaseService):
 	def findUserByOpenid(self, openid):
 		return self.userModel.findUserByOpenid(openid)
 
+	def findUserByUserid(self, openid):
+		return self.userModel.findUserByUserid(openid)
+
 	def insertUserWxInfo(self, userInfo):
 		return self.userModel.insertUserWxInfo(userInfo)

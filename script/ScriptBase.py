@@ -14,6 +14,6 @@ class ScriptBase(object):
 		self.loggerWaning = logging.getLogger("controllerWarning")
 		self.loggerError = logging.getLogger("controllerError")
 
-		self.logger.addFilter(InfoDebugFilter())
-		self.loggerWaning.addFilter(WarngingFilter())
-		self.loggerError.addFilter(ErrorFilter())
+		self.logger.addFilter(InfoDebugFilter(requestId = -1))
+		self.loggerWaning.addFilter(WarngingFilter(requestId = -1))
+		self.loggerError.addFilter(ErrorFilter(requestId = -1))
